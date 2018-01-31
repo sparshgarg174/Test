@@ -22,14 +22,12 @@
 
     <target name="DeployDiff" depends="initHome" 
       description="Deploys the minimum amount of metadata to an org by comparing two tags and transferring the difference. Requires: home, sf_credentials, sourceTag, destBranch.).">
-      <property name="gitBaseDir" value="${homedir}/bin" />
-      <property name="deltaFolder" value="deploy"/>
+       <property name="deltaFolder" value="deploy"/>
       <mkdir dir="${deltaFolder}/src"/>
       <echo>Deploying diff using ...
-        gitBaseDir="${gitBaseDir}"
-        deltaFolder="${deltaFolder}" 
+         deltaFolder="${deltaFolder}" 
         previousDeployment="${previousDeployment}"</echo>
-      <deltaDeployment gitBaseDir="${homedir}/bin" deltaFolder="${deltaFolder}" 
+      <deltaDeployment deltaFolder="${deltaFolder}" 
         previousDeployment="${previousDeployment}"/>
         <property name="sf_deployRoot" value="${deltaFolder}/src"/>      
         <antcall target="deployPackage"/>
