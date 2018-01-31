@@ -2,11 +2,11 @@
          xmlns:sf="antlib:com.salesforce">
 
     <!-- Define the metadata (home) and Ant (tool) folders -->
-    <property name="home" value ="sf-org"/>
+    <property name="home" value ="workspace"/>
 
     <property name="tool" value ="workspace"/>
 
-    <property name="homedir" value="C:\Program Files\Git\bin\git.exe"/>
+    <property name="homedir" value="workspace"/>
 
     <property name="tooldir" value="${basedir}/${tool}"/>
 
