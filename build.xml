@@ -4,7 +4,7 @@
     <!-- Define the metadata (home) and Ant (tool) folders -->
     <property name="home" value ="sf-org"/>
 
-    <property name="tool" value ="ant-sf"/>
+    <property name="tool" value ="workspace"/>
 
     <property name="homedir" value="${basedir}/${home}"/>
 
