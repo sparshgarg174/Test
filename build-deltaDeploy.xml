@@ -26,9 +26,9 @@
       <mkdir dir="${deltaFolder}/src"/>
       <echo>Deploying diff using ...
          deltaFolder="${deltaFolder}" 
-        previousDeployment="${previousDeployment}"</echo>
+        
       <deltaDeployment deltaFolder="${deltaFolder}" 
-        previousDeployment="${previousDeployment}"/>
+        />
         <property name="sf_deployRoot" value="${deltaFolder}/src"/>      
         <antcall target="deployPackage"/>
         <antcall target="tagDeployment"/>
