@@ -6,7 +6,7 @@
 
     <property name="tool" value ="workspace"/>
 
-    <property name="homedir" value="${basedir}/${home}"/>
+    <property name="homedir" value="C:\Program Files\Git\bin\git.exe"/>
 
     <property name="tooldir" value="${basedir}/${tool}"/>
 
