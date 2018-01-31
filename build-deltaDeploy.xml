@@ -23,7 +23,7 @@
     <target name="DeployDiff" depends="initHome" 
       description="Deploys the minimum amount of metadata to an org by comparing two tags and transferring the difference. Requires: home, sf_credentials, sourceTag, destBranch.).">
       <property name="gitBaseDir" value="${homedir}" />
-      <property name="deltaFolder" value="${homedir}/deltaFolder"/>
+      <property name="deltaFolder" value="deploy"/>
       <mkdir dir="${deltaFolder}/src"/>
       <echo>Deploying diff using ...
         gitBaseDir="${gitBaseDir}"
