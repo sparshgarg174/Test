@@ -29,7 +29,7 @@
         gitBaseDir="${gitBaseDir}"
         deltaFolder="${deltaFolder}" 
         previousDeployment="${previousDeployment}"</echo>
-      <deltaDeployment gitBaseDir="${homedir}" deltaFolder="${deltaFolder}" 
+      <deltaDeployment gitBaseDir="${homedir}/bin" deltaFolder="${deltaFolder}" 
         previousDeployment="${previousDeployment}"/>
         <property name="sf_deployRoot" value="${deltaFolder}/src"/>      
         <antcall target="deployPackage"/>
