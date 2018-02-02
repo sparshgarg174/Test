@@ -9,7 +9,7 @@
       with understanding the context for each of the many properties. 
 
     -->
-
+ <property file="build_sf.properties"/>
     <target name="initCheckOnly" 
       description="Sets properties for a CheckOnly deploy. Must be called before initHome (or any target the depends on initHome).">
       <property name="sf_checkOnly" value="true"/>
@@ -154,18 +154,7 @@
         }
       </script>
 
-      <!-- Alternative to specifying a sandbox property. -->
-      <condition property="sf_serverurl" value="https://${sf_host}.salesforce.com">
-        <isset property="sf_host"/>
-      </condition>
-
-      <!-- Adjust properties if sandbox is set, or fallback. -->
-      <property name="sf_serverurl_test" value="https://test.salesforce.com"/>
-
-      <condition property="sf_serverurl" value="${sf_serverurl_test}">
-        <isset property="sandbox"/>
-      </condition>
-   
+     
       <property name="sf_serverurl" value="https://login.salesforce.com"/>
      
       <condition property="sf_username" value="${sf_username_org}.${sandbox}">
