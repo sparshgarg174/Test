@@ -6,6 +6,7 @@
       Ensures that the task property is set
       for targets that require it.
     -->
+	<property file="build_repo.properties"/>
     <target name="taskRequired" depends="initHome">
       <fail message="Must specify task.">
         <condition>
