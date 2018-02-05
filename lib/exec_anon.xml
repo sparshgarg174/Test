@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<project name="ExecAnon">
+
+	<!-- Download from http://sourceforge.net/projects/ant-contrib/files/ant-contrib/1.0b3/ -->
+	<taskdef
+		resource="net/sf/antcontrib/antlib.xml"
+		classpath="${basedir}/lib/ant-contrib-1.0b3.jar"/>
+
+	<!-- Download from https://code.google.com/p/missing-link/ -->
+	<taskdef
+		name="http"
+		classname="org.missinglink.ant.task.http.HttpClientTask"
+		classpath="${basedir}/lib/ml-ant-http-1.1.3.jar"/>
+
+	<!-- Download from http://www.oopsconsultancy.com/software/xmltask/ -->
+	<taskdef
+		name="xmltask"
+		classname="com.oopsconsultancy.xmltask.ant.XmlTask"
+		classpath="${basedir}/lib/xmltask.jar"/>
+
+	<target name="ExecAnon">
+		<executeApex username="${sf.username}" password="${sf.password}">${what}</executeApex>
+	</target>
+
+	<!-- Provides access to the Salesforce Tooling REST  API ExecuteAnnoynmous resource -->
+	<macrodef name="executeApex" description="Provides access to the Salesforce Tooling REST  API ExecuteAnnoynmous resource">
+		<attribute name="username" description="Salesforce user name."/>
+		<attribute name="password" description="Salesforce password."/>
+		<attribute name="server-url" description="Salesforce server."/>
+		<attribute name="resultprefix" description="Property name prefix used for properties containing response data" default="executeAnonymousResponse"/>
+		<attribute name="failonerror" description="If the execute fails then fail the Ant script" default="true"/>
+		<text name="apexcode"/>
+		<sequential>
+			<!-- Login -->
+
+			<login username="@{username}" password="@{password}" server-url="@{server-url}" sessionId="sessionId" iurl="iurl"/>
+			<!-- Extract host/instance name from the serverUrl returned from the login response -->
+			<propertyregex property="host"
+              input="${server-url}"
+              regexp="^((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$"
+              select="\3"
+              casesensitive="false" />
+			<!-- Execute Apex via Tooling API /executeAnonymous resource -->
+				
+				<propertyregex property="instance" input="${iurl}" regexp="(https://[^/]+)/" select="\1" casesensitive="false" />
+	
+				<echo level="info">instance ${instance}</echo>
+				<http url="${instance}/services/data/v37.0/tooling/executeAnonymous" method="GET" entityProperty="executeAnonymousResponse" statusProperty="loginResponseStatus" printrequestheaders="true" printresponseheaders="true">
+		    	<headers>
+		    		<header name="Authorization" value="Bearer ${sessionId}"/>
+		    	</headers>
+		    	<query>
+		    		<parameter name="anonymousBody" value="@{apexcode}"/>
+		    	</query>
+		    </http>
+			<!-- Parse JSON response and set properites -->
+			<echo level="info">executeAnonymousResponse ${executeAnonymousResponse}</echo>
+			<script language="javascript">
+				var response = eval('('+project.getProperty('executeAnonymousResponse')+')');
+				project.setProperty('@{response}', response);
+				for(field in response)
+					project.setProperty('@{resultprefix}.' + field, response[field]);
+			</script>
+			<!-- Fail on error?-->
+
+			<if>
+				<and>
+					<equals arg1="@{failonerror}" arg2="true"/>
+					<equals arg1="${@{resultprefix}.success}" arg2="false"/>
+				</and>
+				<then>
+
+					<if>
+						<equals arg1="${@{resultprefix}.compiled}" arg2="false"/>
+						<then>
+							<fail message="${@{resultprefix}.line}:${@{resultprefix}.column} ${@{resultprefix}.compileProblem}"/>
+						</then>
+						<else>
+							<fail message="${@{resultprefix}.exceptionMessage} ${@{resultprefix}.exceptionStackTrace}"/>
+						</else>
+					</if>
+				</then>
+			</if>
+		</sequential>
+	</macrodef>
+
+	<!-- Login into Salesforce and return the session Id and serverUrl -->
+	<macrodef name="login">
+		<attribute name="username" description="Salesforce user name."/>
+		<attribute name="password" description="Salesforce password."/>
+		<attribute name="server-url"/>
+		<attribute name="iurl"/>
+		<attribute name="sessionId" description="Session Id property."/>
+		<sequential>
+				<echo level="info">Login @{server-url}</echo>
+			<!-- Obtain Session Id via Login SOAP service -->
+				<http url="@{server-url}/services/Soap/c/37.0" method="POST" failonunexpected="false" entityProperty="loginResponse" statusProperty="loginResponseStatus">
+		    	<headers>
+		    		<header name="Content-Type" value="text/xml"/>
+		    		<header name="SOAPAction" value="login"/>
+		    	</headers>
+		    	<entity>
+		    		<![CDATA[
+				    	<env:Envelope xmlns:xsd='http://www.w3.org/2001/XMLSchema' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
+				    	    <env:Body>
+				    	        <sf:login xmlns:sf='urn:enterprise.soap.sforce.com'>
+				    	            <sf:username>@{username}</sf:username>
+				    	            <sf:password>@{password}</sf:password>
+				    	        </sf:login>
+				    	    </env:Body>
+				    	</env:Envelope>
+		    		]]>
+		    	</entity>
+		    </http>
+			<!-- Parse response -->
+			<xmltask destbuffer="loginResponseBuffer">
+				<insert path="/">${loginResponse}</insert>
+			</xmltask>
+			<if>
+				<!-- Success? -->
+				<equals arg1="${loginResponseStatus}" arg2="200"/>
+				<then>
+					<!-- Parse sessionId and serverUrl -->
+					<xmltask sourcebuffer="loginResponseBuffer" failWithoutMatch="true">
+						<copy path="/*[local-name()='Envelope']/*[local-name()='Body']/:loginResponse/:result/:sessionId/text()" property="@{sessionId}"/>
+						<copy path="/*[local-name()='Envelope']/*[local-name()='Body']/:loginResponse/:result/:serverUrl/text()" property="@{iurl}"/>
+					</xmltask>
+					<echo level="info">sessionId ${sessionId}</echo>
+					<echo level="info">serverUrl ${iurl}</echo>
+				</then>
+				<else>
+					<!-- Parse login error message and fail build -->
+					<xmltask sourcebuffer="loginResponseBuffer" failWithoutMatch="true">
+						<copy path="/*[local-name()='Envelope']/*[local-name()='Body']/*[local-name()='Fault']/*[local-name()='faultstring']/text()" property="faultString"/>
+					</xmltask>
+					<fail message="${faultString}"/>
+				</else>
+			</if>
+		</sequential>
+	</macrodef>
+
+	<target name="ExecAnonScript">
+	  <loadfile property="script" srcFile="${what}"/>
+	  <executeApex username="${sf.username}" password="${sf.password}" server-url="${sf.serverurl}">${script}</executeApex>
+	</target>
+
+</project>
