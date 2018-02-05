@@ -146,19 +146,7 @@
         <name>DataCategoryGroup</name>
     </types>
     <types>
-        <members>AF_Images</members>
-        <members>AF_Images/Agency_Fees_Masthead.png</members>
-        <members>Agency_Collateral</members>
-        <members>Agency_Collateral/App_Logo.png</members>
-        <members>Communications_Planner</members>
-        <members>Communications_Planner/Unilever_Logo_for_App.gif</members>
-        <members>EA_Icon_Images</members>
-        <members>EA_Icon_Images/EA_App_Icon.svg</members>
-        <members>IPMNG</members>
-        <members>IPMNG/IPM_Notification_Letterhead_Footer.png</members>
-        <members>IPMNG/IPM_Notification_Letterhead_Header.png</members>
-        <members>Unilever_Images</members>
-        <members>Unilever_Images/New_Unilever_Way_Logo.png</members>
+        <members>*</members>
         <name>Document</name>
     </types>
     <types>
@@ -202,9 +190,7 @@
         <name>Layout</name>
     </types>
     <types>
-        <members>IPM_Notification_Letterhead</members>
-        <members>Notification_Letterhead</members>
-        <members>Unilever_IPM</members>
+        <members>*</members>
         <name>Letterhead</name>
     </types>    
     <types>
@@ -248,11 +234,11 @@
         <name>RemoteSiteSetting</name>
     </types>
     <types>
-        <members>BET_reports</members>
+        <members>*</members>
         <name>Report</name>
     </types>
       <types>
-        <members>PSAR_Dashboards</members>
+        <members>*</members>
         <name>Dashboard</name>
     </types>
     <types>
@@ -267,9 +253,8 @@
         <members>*</members>
         <name>Scontrol</name>
     </types>  
-    <types>
-        <members>BET</members>
-        <members>BETApp</members>
+    <types> 
+        <members>*</members>
         <name>StaticResource</name>
     </types>
     <types>
