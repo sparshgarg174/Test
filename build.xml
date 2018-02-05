@@ -140,7 +140,7 @@
   <!-- ***************************************************************************** -->
   <!-- Validate the  set of meta-data before deployment with Test run                -->
   <!-- ***************************************************************************** -->
-  <target name="validate">
+  <target name="validate" depends="proxy">
     <echo level="info">Testing the deployment</echo>
     <sf:deploy username="${sf.username}"
       password="${sf.password}"
