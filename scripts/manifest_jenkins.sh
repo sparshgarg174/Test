@@ -201,7 +201,7 @@ echo "-----------------------------------------------------------"
 cat components.txt
 
 echo ""
-echo "STEP:2 Create project-manifest-IPMDelta.txt:"
+echo "STEP:2 Create project-manifest.txt:"
 echo "***********************************************************"
 
 
@@ -231,10 +231,10 @@ if grep -q "^src" project-manifest-$2.txt ; then
 		cat auralist.txt >>delta.txt
 	fi
 else
-	cat ../project-manifest-IPMDelta.txt > delta.txt
+	cat ../project-manifest.txt > delta.txt
 fi
 
-	cp delta.txt ../project-manifest-IPMDelta.txt; 
+	cp delta.txt ../project-manifest.txt; 
 	echo "Copying DELTA Manifest to $s_path/.."
 	echo ""
 	echo "Delta file is as follows:"
@@ -244,7 +244,7 @@ fi
 # Case to handle when project manifest was not changed in between a given commitid
 
 if ! grep -q "project-manifest" components.txt; then
-	cat ../project-manifest-IPMDelta.txt >> components.txt
+	cat ../project-manifest.txt >> components.txt
 fi
 
 echo ""
