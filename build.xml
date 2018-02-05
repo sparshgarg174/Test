@@ -292,25 +292,7 @@
       pollWaitMillis="${sfdc.pollWaitMillis}"
       maxPoll="${sfdc.maxPoll}"/>
   </target>
-  <!-- *************************************************************************************** -->
-  <!-- Performing validate undeploy Salesforce components from Salesforce Org- DESTRUCTIVE CHANGE       -->
-  <!-- *************************************************************************************** -->  
-    <target name="validate-undeploy">
-      <echo level="info">Performing validate undeploy - DESTRUCTIVE CHANGE</echo>  
-      <sf:deploy username="${sf.username}" 
-        password="${sf.password}" 
-        serverurl="${sf.serverurl}" 
-        checkOnly="true"
-        runAllTests="true"
-        logType="Debugonly"
-        testLevel="RunLocalTests"
-        allowMissingFiles="true"
-        autoUpdatePackage="true"
-        ignoreWarnings="true"       
-        deployRoot="${basedir}/undeploy"
-        pollWaitMillis="${sfdc.pollWaitMillis}"
-        maxPoll="${sfdc.maxPoll}"/>        
-    </target><!-- *************************************************************************************** -->
+ <!-- *************************************************************************************** -->
   <!-- Performing deploy undeploy Salesforce components from Salesforce Org- DESTRUCTIVE CHANGE       -->
   <!-- *************************************************************************************** -->  
     <target name="deploy-undeploy">
