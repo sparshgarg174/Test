@@ -134,11 +134,10 @@
       be overridden from the CLI or build server.
 
     -->
-    <target name="initHome" depends="initRepo">
+    <target name="initHome" >
 
       <!-- Fallback to properties file for any sf fields not aleady set. -->
-      <property file="${tooldir}/build_local.properties"/>
-      <property file="${tooldir}/build_sf.properties"/>
+       <property file="${tooldir}/build_sf.properties"/>
             
       <!-- 
         If sf_credentials is set, parse into sf_username_org, and sf_password. 
