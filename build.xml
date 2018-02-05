@@ -93,7 +93,6 @@
         <sf:deploy username="${sf.username}"
         password="${sf.password}"
         serverurl="${sf.serverurl}"
-        recentValidationId = "${sf.validationid}"
         deployRoot="${basedir}/src"
         pollWaitMillis="${sfdc.pollWaitMillis}"
         maxPoll="${sfdc.maxPoll}"/>
