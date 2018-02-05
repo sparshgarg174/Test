@@ -1,3 +1,4 @@
+//Adding comment
 public class ContactSearch{
     public static List<Contact> searchForContacts(String lname,String postal){
     List<Contact> lcon=new List<Contact>();
