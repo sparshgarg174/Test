@@ -196,7 +196,7 @@
     <!--
 	   Deploys metadata into a package named on the package manifest in the "deployRoot" folder.
     -->
-    <target name="deployPackage">
+    <target name="deployPackage" depends="proxy">
         <property name="sf_allowMissingFiles" value="true"/>
         <property name="sf_autoUpdatePackage" value="true"/>
         <property name="sf_checkOnly" value="false" />
