@@ -1,4 +1,3 @@
-//Tset
 public class ContactAndLeadSearch{
     public static List<List<SObject>> searchContactsAndLeads(String lname){
     
