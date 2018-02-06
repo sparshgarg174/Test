@@ -8,9 +8,10 @@
 #
 # find src > project-manifest-NAME.txt
 #
-mkdir tmp
-rm -rf tmp/*
-rsync -av --files-from=$1 . tmp
-rm -rf src/*
+mkdir tmp || true
+rm -rf tmp/* || true
+rsync -av --ignore-errors --files-from=project-manifest.txt . tmp || true
+rm -rf src/* || true
 cp -R tmp/src/* src/
-rm -rf tmp
+rm -rf tmp || true
+find src
