@@ -16,7 +16,7 @@ fi
 #==========================================================
 
 if [ "$#" -eq 3 ]; then
-	git checkout $3
+	sudo git checkout $3
 else
 	git checkout $3
 fi
@@ -239,7 +239,7 @@ fi
 	echo ""
 	echo "Delta file is as follows:"
 	echo "-----------------------------------------------------------"
-	cat "`echo $s_path`"/../project-manifest-Delta.txt
+	cat "`echo $s_path`"/../project-manifest.txt
 
 # Case to handle when project manifest was not changed in between a given commitid
 
@@ -262,13 +262,13 @@ else
 	cd $4
 	echo "Pulling latest code in the target repo: $4 " 
 	echo ""
-	
+	git pull
 	cd -
 	echo ""
 	while read line; 
 	do 
 		cd "`echo $s_path`" ;
-		cp "`echo $line`" "`echo $t_path`"; 
+		cp  "`echo $line`" "`echo $t_path`"; 
 		echo "Copying $line from $s_path to $t_path"
 	done < components.txt
 	cd scripts
@@ -299,6 +299,21 @@ rm del_components.txt
 
 cd "`echo $t_path`"
 
+
+if [ "$#" -eq 3 ]; then
+	 git status
+	echo ""
+	echo "STEP:4 Pushing changes to repo"
+	echo "***********************************************************"
+	 git add .
+	 git commit -m "Automatic: Commits: $1 to $last_commitID "
+	 git push
+else
+	git status
+	 git add .
+	 git commit -m "Automatic Merge: from $3 after commit $1"
+	 git push
+fi
 
 echo ""
 echo "****************End Of Process*****************************"
