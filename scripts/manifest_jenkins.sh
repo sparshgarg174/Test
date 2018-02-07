@@ -247,41 +247,6 @@ if ! grep -q "project-manifest" components.txt; then
 	cat ../project-manifest.txt >> components.txt
 fi
 
-echo ""
-echo "STEP:3 Copy files from one branch to another (if not same):"
-echo "***********************************************************"
-
-alias cp="cp"
-
-s_path=`pwd | sed -s "s/\/scripts//"`
-if [ "$#" -eq 3 ]; then
-	t_path=$s_path
-	echo "No need to copy anything, as task is being performed the same branch"
-else
-	t_path=$4
-	cd $4
-	echo "Pulling latest code in the target repo: $4 " 
-	echo ""
-	git pull
-	cd -
-	echo ""
-	while read line; 
-	do 
-		cd "`echo $s_path`" ;
-		cp  "`echo $line`" "`echo $t_path`"; 
-		echo "Copying $line from $s_path to $t_path"
-	done < components.txt
-	cd scripts
-fi
-
-if [ -s del_components.txt ];then
-	echo ""
-	echo "#### These components might have been deleted. Please double check. #### "
-	echo ""
-	cat del_components.txt
-	echo ""
-fi
-
 # Remove temporary files
 rm uniqManifest.txt
 rm components.txt
@@ -296,24 +261,6 @@ rm labels.txt
 rm aura.txt
 rm del_components.txt
 
-
-cd "`echo $t_path`"
-
-
-if [ "$#" -eq 3 ]; then
-	 git status
-	echo ""
-	echo "STEP:4 Pushing changes to repo"
-	echo "***********************************************************"
-	 git add .
-	 git commit -m "Automatic: Commits: $1 to $last_commitID "
-	 git push
-else
-	git status
-	 git add .
-	 git commit -m "Automatic Merge: from $3 after commit $1"
-	 git push
-fi
 
 echo ""
 echo "****************End Of Process*****************************"
