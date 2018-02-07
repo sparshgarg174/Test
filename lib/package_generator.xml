@@ -34,7 +34,7 @@
 
 <project name="sfdc" xmlns:sf="antlib:com.salesforce">
 	
-	<property name="stage.dir" value="tmp"/>
+	<property name="stage.dir" value="src"/>
 	<property name="target" value="package.xml"/>
 	
 	<target name="generatePackage">
