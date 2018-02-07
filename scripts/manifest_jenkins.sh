@@ -16,7 +16,7 @@ fi
 #==========================================================
 
 if [ "$#" -eq 3 ]; then
-	sudo git checkout $3
+	git checkout $3
 else
 	git checkout $3
 fi
@@ -262,13 +262,13 @@ else
 	cd $4
 	echo "Pulling latest code in the target repo: $4 " 
 	echo ""
-	git pull
+	
 	cd -
 	echo ""
 	while read line; 
 	do 
 		cd "`echo $s_path`" ;
-		cp --parents "`echo $line`" "`echo $t_path`"; 
+		cp "`echo $line`" "`echo $t_path`"; 
 		echo "Copying $line from $s_path to $t_path"
 	done < components.txt
 	cd scripts
@@ -299,21 +299,6 @@ rm del_components.txt
 
 cd "`echo $t_path`"
 
-
-if [ "$#" -eq 3 ]; then
-	sudo git status
-	echo ""
-	echo "STEP:4 Pushing changes to repo"
-	echo "***********************************************************"
-	sudo git add .
-	sudo git commit -m "Automatic: Commits: $1 to $last_commitID "
-	sudo git push
-else
-	git status
-	sudo git add .
-	sudo git commit -m "Automatic Merge: from $3 after commit $1"
-	sudo git push
-fi
 
 echo ""
 echo "****************End Of Process*****************************"
