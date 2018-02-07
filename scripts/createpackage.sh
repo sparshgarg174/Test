@@ -20,7 +20,7 @@ echo Last Commit: $LCOMMIT
 
 #change working directory to the dir for this build
 echo Changing working directory to /var/lib/jenkins/workspace
-cd Program Files (x86)/Jenkins/jobs/GenerateManifest/workspace
+cd 'Program Files (x86)/Jenkins/jobs/GenerateManifest/workspace'
 
 # check for the existence of an existing commit file for this
 # project
