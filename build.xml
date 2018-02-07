@@ -95,7 +95,7 @@
         serverurl="${sf.serverurl}"
         deployRoot="package.xml"
         pollWaitMillis="${sfdc.pollWaitMillis}"
-        maxPoll="${sfdc.maxPoll}" autoUpdatePackage=true />
+        maxPoll="${sfdc.maxPoll}" autoUpdatePackage="true" />
     </target>
   <!-- ***************************************************************************** -->
   <!-- Deploy the meta-data from code Repository to salesforce your org     -->
