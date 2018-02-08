@@ -255,10 +255,6 @@ rm componentstemp.txt
 rm tempManifest.txt
 rm delta.txt
 rm componentsFile.txt
-rm project-manifest.txt
-rm auralist.txt
-rm labels.txt
-rm aura.txt
 rm del_components.txt
 
 
