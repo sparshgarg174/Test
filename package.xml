@@ -154,5 +154,5 @@
         <members>*</members>
         <name>Profile</name>
     </types>
-    <version>41.0</version>
+    <version>39.0</version>
 </Package>
