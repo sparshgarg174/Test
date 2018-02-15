@@ -1,0 +1,90 @@
+<project name="VillageChief DataHub" xmlns:sf="salesforce">
+  <property file="${user.dir}/sonar-project.properties"/>
+  
+  
+  <!-- Define the Sonar task -->
+  <taskdef uri="antlib:org.sonar.ant" resource="org/sonar/ant/antlib.xml">
+    <classpath path="${basedir}/lib/sonar-ant-task-1.4.jar" />
+  </taskdef>
+  
+  <!-- define the force versions task -->
+	<taskdef name='scm' classname='com.villagechief.codescan.versions.ant.ScmCommitterTask'>
+    <classpath path="${basedir}/lib/force-versions-0.2-SNAPSHOT.jar" />
+  </taskdef>
+  
+  <!-- Define the Salesforce task -->
+  <taskdef uri="salesforce" resource="com/salesforce/antlib.xml">
+    <classpath path="${basedir}/lib/ant-salesforce.jar" />
+  </taskdef>
+  
+  <!-- Add the target -->
+  <target name="sonar">
+    
+    <!-- db properties -->
+    <property name="sonar.jdbc.url" value="jdbc:postgresql://unlsfdevops.ccamuapf3ayx.eu-central-1.rds.amazonaws.com:5432/sonarqube" />
+    <property name="sonar.jdbc.username" value="sonar" />
+    <property name="sonar.jdbc.password" value="sonar" />
+  
+    <!-- location properties -->
+    <property name="sonar.sources" value="${user.dir}/src" />
+    <property name="sonar.binaries" value="${user.dir}/bin" />
+    <property name="sonar.tests" value="${user.dir}/tests" />
+    <property name="sonar.libraries" value="${user.dir}/" />
+    
+    <!-- define if not already defined properties -->
+    <property name="sonar.language" value="sf" />
+    <property name="salesforce.url" value="https://www.salesforce.com" />
+    <property name="sonar.projectVersion" value="1.0-SNAPSHOT" />
+   
+    <sonar:sonar key="${sonar.projectKey}" version="${sonar.projectVersion}" xmlns:sonar="antlib:org.sonar.ant"/>
+  </target>
+  
+  <target name="commit">
+    <scm username="${salesforce.username}" password="${salesforce.password}" serverurl="${salesforce.url}" repository="${scm}" >
+			<fileset dir="${user.dir}/src">
+			    <include name="**/*"/>
+			</fileset>
+		</scm>
+  </target>
+  
+  <target name="deletesrc">
+    <delete dir="${user.dir}/src">
+        <include name="**/*"/>
+        <exclude name="package.xml"/>
+    </delete>
+    
+  </target>
+  <target name="download">
+    <!-- Retrieve the contents listed in the file codepkg/package.xml into the codepkg directory -->
+    <sf:retrieve username="${salesforce.username}" password="${salesforce.password}" serverurl="${salesforce.url}" 
+      retrieveTarget="src" unpackaged="src/package.xml"/>
+
+    <!--   
+    <sf:retrieve username="${salesforce.username}" password="${salesforce.password}" serverurl="${salesforce.url}" 
+      retrieveTarget="src" packageNames=""/>-->
+  </target>
+  
+  <target name="deploy">
+    <!-- Retrieve the contents listed in the file codepkg/package.xml into the codepkg directory -->
+    <sf:deploy username="${salesforce.username}" password="${salesforce.password}" serverurl="${salesforce.url}" 
+      deployroot="src"/>
+  </target>
+  
+  <target name="commitall">
+    <exec executable="git" dir="${user.dir}">
+      <arg value="add"/>
+      <arg value="-A"/>
+    </exec>
+    <exec executable="git" dir="${user.dir}">
+      <arg value="commit"/>
+      <arg value="-a"/>
+      <arg value="-m"/>
+      <arg value="&lt;automcommit: all&gt;"/>
+    </exec>
+  </target>
+  
+  
+  <!-- <target name="analyse" depends="deletesrc, download, commit, commitall, sonar" /> -->
+  <target name="analyse" depends="deletesrc, download, sonar" />
+</project>
+
