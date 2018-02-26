@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Tasks for import and export of Salesforce data" basedir="." xmlns:sf="antlib:com.salesforce">
-	
     <!-- these can be overwritten in your property file -->
     <property name="dataLoaderAPIVersion" value="29.0.0" />
+
 
     <!-- Define required jars-->
     <path id="taskDependencies">
         <pathelement location="./lib/ant.jar"/>
     </path>
 
+	<target name="exportData" description="Export Salesforce objects">
+        <sfExport object="${object}" orgserver="${sf.orgserver}" basedir="${basedir}" orgname="${orgname}" dataLoaderAPIVersion="${dataLoaderAPIVersion}" username="${sf.username}" password="${sf.passwordencrypted}" soql="${soql}" />
+    </target>	
+	
     <property environment="env"/>
 
     <macrodef name="sfUpsert">
