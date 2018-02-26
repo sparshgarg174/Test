@@ -89,10 +89,6 @@
         <delete dir="${basedir}/orgs/${orgname}/data"/>
     </target>
 
-    <target name="exportData" description="Export Salesforce objects">
-        <sfExport object="${object}" orgserver="${sf.orgserver}" basedir="${basedir}" orgname="${orgname}" dataLoaderAPIVersion="${dataLoaderAPIVersion}" username="${sf.username}" password="${sf.passwordencrypted}" soql="${soql}" />
-    </target>
-
     <target name="upsertData" description="Upsert Salesforce objects">
         <sfUpsert object="${object}" orgserver="${sf.orgserver}" basedir="${basedir}" orgname="${orgname}" dataLoaderAPIVersion="${dataLoaderAPIVersion}" username="${sf.username}" password="${sf.passwordencrypted}" externalIdField="Load_ID__c" />
     </target>
