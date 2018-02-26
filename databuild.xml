@@ -9,7 +9,7 @@
         <pathelement location="./lib/ant.jar"/>
     </path>
 
-	<target name="exportData" description="Export Salesforce objects">
+	<target name="exportData" description="Export Salesforce objects" depends="proxy">
         <sfExport object="${object}" orgserver="${sf.orgserver}" basedir="${basedir}" orgname="${orgname}" dataLoaderAPIVersion="${dataLoaderAPIVersion}" username="${sf.username}" password="${sf.passwordencrypted}" soql="${soql}" />
     </target>	
 	
@@ -99,5 +99,11 @@
 	    <mapper type="glob" from="*Export.csv" to="*Insert.csv"/>
         </copy>
     </target>
-
+ <target name="proxy">		
+ 	<property name="proxy.host" value="${proxy.host}" />		
+ 	<property name="proxy.port" value="${proxy.port}" />		
+ 	<property name="proxy.user" value="${proxy.user}" />		
+ 	<property name="proxy.pwd" value="${proxy.pwd}" />		
+ 	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
+ </target>	
 </project>
