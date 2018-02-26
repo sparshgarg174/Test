@@ -184,7 +184,7 @@
     <mkdir dir="${basedir}/orgs/${orgname}/data"/>
   </target>
   <!-- Export Data from given Salesforce Org -->
-  <target name="exportData" description="Export Salesforce objects">
+  <target name="exportData" description="Export Salesforce objects" depends="proxy">
     <sfExport object="${object}" orgserver="${sf.orgserver}" basedir="${basedir}" orgname="${orgname}" username="${sf.username}" password="${sf.passwordencrypted}" soql="${soql}" />
   </target>
 
@@ -496,10 +496,7 @@
         
      ]]>
 </scriptdef>
-   	<target name="exportData" description="Export Salesforce objects" depends="proxy">
-        <sfExport object="${object}" orgserver="${sf.orgserver}" basedir="${basedir}" orgname="${orgname}" dataLoaderAPIVersion="${dataLoaderAPIVersion}" username="${sf.username}" password="${sf.passwordencrypted}" soql="${soql}" />
-    </target>	
- <target name="proxy">		
+  <target name="proxy">		
  	<property name="proxy.host" value="${proxy.host}" />		
  	<property name="proxy.port" value="${proxy.port}" />		
  	<property name="proxy.user" value="${proxy.user}" />		
