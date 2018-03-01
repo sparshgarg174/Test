@@ -36,6 +36,8 @@
   <import file="${basedir}/lib/undeploy.xml"/>
   <import file="${basedir}/lib/run_tests.xml"/>
   <import file="${basedir}/lib/package_generator.xml"/>
+  
+  <antcall target="generatePackage"/>
   <target name="proxy">		
  	<property name="proxy.host" value="${proxy.host}" />		
  	<property name="proxy.port" value="${proxy.port}" />		
