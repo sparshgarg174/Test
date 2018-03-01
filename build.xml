@@ -85,14 +85,6 @@
       maxPoll="${sfdc.maxPoll}">
     </sf:deploy>    
   </target>  
-  
-   <target name="proxy">		
- 	<property name="proxy.host" value="${proxy.host}" />		
- 	<property name="proxy.port" value="${proxy.port}" />		
- 	<property name="proxy.user" value="${proxy.user}" />		
- 	<property name="proxy.pwd" value="${proxy.pwd}" />		
- 	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
- </target>		
   <!-- ***************************************************************************** -->
   <!-- QuickDeploy the meta-data from code Repository to salesforce your org     -->
   <!-- ***************************************************************************** -->
@@ -101,14 +93,14 @@
         <sf:deploy username="${sf.username}"
         password="${sf.password}"
         serverurl="${sf.serverurl}"
-        deployRoot="src"
+        deployRoot="${basedir}/src"
         pollWaitMillis="${sfdc.pollWaitMillis}"
-        maxPoll="${sfdc.maxPoll}" autoUpdatePackage="true" />
+        maxPoll="${sfdc.maxPoll}"/>
     </target>
   <!-- ***************************************************************************** -->
   <!-- Deploy the meta-data from code Repository to salesforce your org     -->
   <!-- ***************************************************************************** -->
-  <target name="deploy" depends="proxy">
+  <target name="deploy">
     <echo level="info">Performing the deploy</echo>
     <sf:deploy username="${sf.username}"
       password="${sf.password}"
@@ -504,6 +496,12 @@
         
      ]]>
 </scriptdef>
-
+ <target name="proxy">		
+ 	<property name="proxy.host" value="${proxy.host}" />		
+ 	<property name="proxy.port" value="${proxy.port}" />		
+ 	<property name="proxy.user" value="${proxy.user}" />		
+ 	<property name="proxy.pwd" value="${proxy.pwd}" />		
+ 	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
+ </target>		
 
 </project>
