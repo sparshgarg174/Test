@@ -54,6 +54,14 @@
     </delete>
     <move file="${basedir}/${sfdc.retrieveTarget}" tofile="src"/>
   </target>
+  
+   <target name="proxy">		
+ 	<property name="proxy.host" value="${proxy.host}" />		
+ 	<property name="proxy.port" value="${proxy.port}" />		
+ 	<property name="proxy.user" value="${proxy.user}" />		
+ 	<property name="proxy.pwd" value="${proxy.pwd}" />		
+ 	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
+ </target>	
 
   <target name="retrieve-updates" description="Retrieve update(s)">
     <echo level="info">Performing a retrieve</echo>
@@ -496,12 +504,4 @@
         
      ]]>
 </scriptdef>
- <target name="proxy">		
- 	<property name="proxy.host" value="${proxy.host}" />		
- 	<property name="proxy.port" value="${proxy.port}" />		
- 	<property name="proxy.user" value="${proxy.user}" />		
- 	<property name="proxy.pwd" value="${proxy.pwd}" />		
- 	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
- </target>		
-
 </project>
