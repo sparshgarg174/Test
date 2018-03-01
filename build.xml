@@ -85,6 +85,14 @@
       maxPoll="${sfdc.maxPoll}">
     </sf:deploy>    
   </target>  
+  
+   <target name="proxy">		
+ 	<property name="proxy.host" value="${proxy.host}" />		
+ 	<property name="proxy.port" value="${proxy.port}" />		
+ 	<property name="proxy.user" value="${proxy.user}" />		
+ 	<property name="proxy.pwd" value="${proxy.pwd}" />		
+ 	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
+ </target>		
   <!-- ***************************************************************************** -->
   <!-- QuickDeploy the meta-data from code Repository to salesforce your org     -->
   <!-- ***************************************************************************** -->
@@ -496,12 +504,6 @@
         
      ]]>
 </scriptdef>
- <target name="proxy">		
- 	<property name="proxy.host" value="${proxy.host}" />		
- 	<property name="proxy.port" value="${proxy.port}" />		
- 	<property name="proxy.user" value="${proxy.user}" />		
- 	<property name="proxy.pwd" value="${proxy.pwd}" />		
- 	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
- </target>		
+
 
 </project>
