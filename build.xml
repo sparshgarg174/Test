@@ -37,7 +37,7 @@
   <import file="${basedir}/lib/run_tests.xml"/>
   <import file="${basedir}/lib/package_generator.xml"/>
   
-  <antcall target="generatePackage"/>
+
   <target name="proxy">		
  	<property name="proxy.host" value="${proxy.host}" />		
  	<property name="proxy.port" value="${proxy.port}" />		
@@ -105,6 +105,7 @@
         deployRoot="src"
         pollWaitMillis="${sfdc.pollWaitMillis}"
         maxPoll="${sfdc.maxPoll}" autoUpdatePackage="true" />
+     <!--<antcall target="generatePackage"/>-->
     </target>
   <!-- ***************************************************************************** -->
   <!-- Deploy the meta-data from code Repository to salesforce your org     -->
@@ -123,6 +124,7 @@
       deployRoot="${basedir}/src"
       pollWaitMillis="${sfdc.pollWaitMillis}"
       maxPoll="${sfdc.maxPoll}"/>
+    <!--<antcall target="generatePackage"/>-->
   </target>
 
   <target name="deployPackage" depends="deploy"/>
