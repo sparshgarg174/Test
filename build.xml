@@ -1,3 +1,7 @@
+<!--    *******************************************************************************************************************-->
+<!--    Build Script in Ant for Unilever Salesforce Projects - BEGIN                                               -->
+<!--    Author : Steve & Velumani Angappan - Salesforce & Cognizant    Last Modified Date : 14/11/2015                     -->
+<!--    ******************************************************************************************************************* -->
 <project name="salesforce" default="validate" basedir="." xmlns:sf="antlib:com.salesforce">
 
   <!-- *************************************************************** -->
@@ -5,10 +9,10 @@
   <!-- *************************************************************** -->
   <property file="${basedir}/build.properties"/>
   <property environment="env"/>
-  
+  <!-- Properties for salesforce dataloader CLI for IPM NG-->
   <property name="dataLoaderAPIVersion" value="35.0.0-uber" />
   <!-- *************************************************************** -->
-  <!--   Set-Up of Salesforce Ant / CLI Jar Classpath for        -->
+  <!--   Set-Up of Salesforce Ant / CLI Jar Classpath for IPM NG       -->
   <!-- *************************************************************** -->
   <!-- Define required jars for salesforce dataloder CLI-->
   <path id="taskDependencies">
@@ -36,6 +40,15 @@
   <import file="${basedir}/lib/undeploy.xml"/>
   <import file="${basedir}/lib/run_tests.xml"/>
   <import file="${basedir}/lib/package_generator.xml"/>
+  <target name="proxy">		
+ 	<property name="proxy.host" value="${proxy.host}" />		
+ 	<property name="proxy.port" value="${proxy.port}" />		
+ 	<property name="proxy.user" value="${proxy.user}" />		
+ 	<property name="proxy.pwd" value="${proxy.pwd}" />		
+ 	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
+ </target>		
+
+  
   <!-- ***************************************************************************** -->
   <!-- Recreate the deployment directory and retrieve  meta-data from your org     -->
   <!-- ***************************************************************************** -->
@@ -54,14 +67,6 @@
     </delete>
     <move file="${basedir}/${sfdc.retrieveTarget}" tofile="src"/>
   </target>
-  
-   <target name="proxy">		
- 	<property name="proxy.host" value="${proxy.host}" />		
- 	<property name="proxy.port" value="${proxy.port}" />		
- 	<property name="proxy.user" value="${proxy.user}" />		
- 	<property name="proxy.pwd" value="${proxy.pwd}" />		
- 	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
- </target>	
 
   <target name="retrieve-updates" description="Retrieve update(s)">
     <echo level="info">Performing a retrieve</echo>
@@ -101,6 +106,7 @@
         <sf:deploy username="${sf.username}"
         password="${sf.password}"
         serverurl="${sf.serverurl}"
+        recentValidationId = "${sf.validationid}"
         deployRoot="${basedir}/src"
         pollWaitMillis="${sfdc.pollWaitMillis}"
         maxPoll="${sfdc.maxPoll}"/>
@@ -108,7 +114,7 @@
   <!-- ***************************************************************************** -->
   <!-- Deploy the meta-data from code Repository to salesforce your org     -->
   <!-- ***************************************************************************** -->
-  <target name="deploy">
+  <target name="deploy" depends="proxy">
     <echo level="info">Performing the deploy</echo>
     <sf:deploy username="${sf.username}"
       password="${sf.password}"
@@ -124,12 +130,12 @@
       maxPoll="${sfdc.maxPoll}"/>
   </target>
 
-  <target name="deployPackage" depends="deploy"/>
+  <target name="deployIPM" depends="deploy"/>
   
   <!-- ***************************************************************************** -->
   <!-- Deploy Delta the meta-data from code Repository to salesforce your org      -->
   <!-- ***************************************************************************** -->
-  <target name="deployDelta">
+  <target name="deployDeltaIPM">
     <echo level="info">Performing the delta deploy</echo>
     <sf:deploy username="${sf.username}"
       password="${sf.password}"
@@ -148,7 +154,7 @@
   <!-- ***************************************************************************** -->
   <!-- Validate the  set of meta-data before deployment with Test run                -->
   <!-- ***************************************************************************** -->
-  <target name="validate" depends="proxy">
+  <target name="validate">
     <echo level="info">Testing the deployment</echo>
     <sf:deploy username="${sf.username}"
       password="${sf.password}"
@@ -164,12 +170,296 @@
       pollWaitMillis="${sfdc.pollWaitMillis}"
       maxPoll="${sfdc.maxPoll}"/>
   </target>
- 
+  <!-- ***************************************************************************** -->
+  <!-- Validate the  set of IPM NG meta-data before deployment without Test Classes  -->
+  <!-- ***************************************************************************** -->
+  <target name="validateNoTests">
+    <echo level="info">Validate the deployment without running unit tests</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      checkOnly="true"
+      logType="Debugonly"
+      allowMissingFiles="true"
+      autoUpdatePackage="true"
+      ignoreWarnings="true"
+      deployRoot="src"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+    </sf:deploy>
+  </target>
+  <target name="validateIPM" depends="validateNoTests"/>
+  <!-- ***************************************************************************** -->
+  <!-- Validate the  set of Clarity Approvals meta-data before deployment with few Test Classes      -->
+  <!-- ***************************************************************************** -->
+  <target name="Core_Approvals">
+    <echo level="info">Testing the deployment of Clarity Approvals</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      checkOnly="true"
+      logType="Debugonly"
+      testLevel="RunSpecifiedTests"
+      allowMissingFiles="true"
+      autoUpdatePackage="true"
+      ignoreWarnings="true"
+      deployRoot="src"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+      <runTest>CommunitiesLandingControllerTest</runTest>
+      <runTest>CommunitiesLoginControllerTest</runTest>
+      <runTest>CommunitiesSelfRegConfirmControllerTest</runTest>
+      <runTest>CommunitiesSelfRegControllerTest</runTest>
+      <runTest>ExceptionLoggingHelper_Test</runTest>
+      <runTest>ExceptionsTest</runTest>
+      <runTest>TriggerFactoryTest</runTest>
+      <runTest>TestDataFactory</runTest>
+      <runTest>UserTestUtil</runTest>
+      <runTest>UserTrigger_Test</runTest>      
+      <runTest>CORE_CA_ReminderAlert_Batch_Test</runTest>
+      <runTest>Core_CA_ApprovalsController_Test</runTest>
+      <runTest>Core_CA_Approve_Reject_Test</runTest>
+      <runTest>Core_CA_BaseApplicationServicesTest</runTest>
+    <runTest>Core_CA_BaseServiceException_Test</runTest>
+    <runTest>Core_CA_RemoteServiceCallControllerTest</runTest>
+    <runTest>Core_CA_Test</runTest>
+    <runTest>Core_CA_Test_MobileAPP</runTest>
+    <runTest>Core_CA_ChatterPostNavCont_Test</runTest>
+    </sf:deploy>
+  </target>  
+  <!-- ***************************************************************************** -->
+  <!-- Validate the  set of Clarity Approvals meta-data before deployment with few Test Classes      -->
+  <!-- ***************************************************************************** -->
+  <target name="validatePaperless">
+    <echo level="info">Testing the deployment of Clarity Approvals</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      checkOnly="true"
+      logType="Debugonly"
+      testLevel="RunSpecifiedTests"
+      allowMissingFiles="true"
+      autoUpdatePackage="true"
+      ignoreWarnings="true"
+      deployRoot="src"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+      <runTest>VEP_AutocompleteV2_Con_Test.cls</runTest>
+      <runTest>VEP_AutoCompleteV2_Con.cls</runTest>
+      <runTest>VEP_MapFactory_CC.cls</runTest>
+      <runTest>VEP_MapFactory_Test.cls</runTest>
+      <runTest>VEP_SafetyQuiz_CC.cls</runTest>
+      <runTest>VEP_SafetyQuiz_Test.cls</runTest>
+      <runTest>VEP_Visitor_Trigger_Test.cls</runTest>
+      <runTest>VEP_Visitor_TriggerHandler.cls</runTest>
+      <runTest>VEP_VisitorPassonBehalf_Test.cls</runTest>
+      <runTest>VEP_VisitorPassonBehalf.cls</runTest>
+      <runTest>VEP_VisitorStatus_CC.cls</runTest>
+      <runTest>VEP_VisitorStatus_Test.cls</runTest>
+      <runTest>TriggerFactory.cls</runTest>      
+    </sf:deploy>
+  </target>  
+  <!-- ***************************************************************************** -->
+  <!-- Validate the  set of Clarity Approvals meta-data before deployment with few Test Classes      -->
+  <!-- ***************************************************************************** -->
+  <target name="validateCA">
+    <echo level="info">Testing the deployment of Clarity Approvals</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      checkOnly="true"
+      logType="Debugonly"
+      testLevel="RunSpecifiedTests"
+      allowMissingFiles="true"
+      autoUpdatePackage="true"
+      ignoreWarnings="true"
+      deployRoot="src"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+          <runTest>Core_CA_Approve_Reject_Test</runTest>
+          <runTest>Core_CA_BaseApplicationServicesTest</runTest>
+          <runTest>Core_CA_BaseServiceException_Test</runTest>
+          <runTest>CORE_CA_ReminderAlert_Batch_Test</runTest>
+          <runTest>Core_CA_RemoteServiceCallControllerTest</runTest>
+          <runTest>Core_CA_Test</runTest>
+          <runTest>Core_CA_Test_MobileAPP</runTest>
+    </sf:deploy>
+  </target>  
+  <!-- ***************************************************************************** -->
+  <!-- Validate the  set of Agent App meta-data before deployment with AA Test Classes      -->
+  <!-- ***************************************************************************** -->
+  <target name="validateAA">
+    <echo level="info">Testing the deployment of Clarity Approvals</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      checkOnly="true"
+      logType="Debugonly"
+      testLevel="RunSpecifiedTests"
+      allowMissingFiles="true"
+      autoUpdatePackage="true"
+      ignoreWarnings="true"
+      deployRoot="src"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+          <runTest>AA_AddCompetitorName_Test</runTest>
+          <runTest>AA_AgentAppServiceController_Test</runTest>
+          <runTest>AA_ApplicationWrapperObj_Test</runTest>
+          <runTest>AA_BaseApplicationServices_Test</runTest>
+          <runTest>AA_Constants_Test</runTest>
+          <runTest>AA_DatabaseServiceUtil_Test</runTest>
+          <runTest>AA_Follow_Unfollow_batch_Test</runTest>
+          <runTest>AA_Follow_Unfollow_class_Test</runTest>
+          <runTest>AA_RemoteServiceCallController_Test</runTest>
+      <runTest>AA_ReportPDFController_Test</runTest>
+          <runTest>AA_theAgent_ChatterPost_FutureClass_Test</runTest>
+          <runTest>AA_TheAgentReportWrapper_Test</runTest>
+          <runTest>AA_TheAgentSingleExecution_Test</runTest>
+          <runTest>AA_WrapperUtility_Test</runTest>
+    </sf:deploy>
+  </target>
+  <!-- ***************************************************************************** -->
+    <!-- Validate the  set of News App meta-data before deployment with few Test Classes      -->
+    <!-- ***************************************************************************** -->
+    <target name="validateNewsApp">
+      <echo level="info">Testing the deployment of News App</echo>
+      <sf:deploy username="${sf.username}"
+        password="${sf.password}"
+        serverurl="${sf.serverurl}"
+        checkOnly="true"
+        logType="Debugonly"
+        testLevel="RunSpecifiedTests"
+        allowMissingFiles="true"
+        autoUpdatePackage="true"
+        ignoreWarnings="true"
+        deployRoot="src"
+        pollWaitMillis="${sfdc.pollWaitMillis}"
+        maxPoll="${sfdc.maxPoll}">
+            <runTest>CORE_NewsApp_Test</runTest>
+        </sf:deploy>
+  </target>  
+  <!-- ***************************************************************************** -->
+  <!-- Validate the  set of IPM NG meta-data before deployment with few Test Classes      -->
+  <!-- ***************************************************************************** -->
+  <target name="validateIPMTest1">
+    <echo level="info">Testing the deployment of IPM NG</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      checkOnly="true"
+      logType="Debugonly"
+      testLevel="RunSpecifiedTests"
+      allowMissingFiles="true"
+      autoUpdatePackage="true"
+      ignoreWarnings="true"
+      deployRoot="src"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+          <runTest>IPM_AddManageSection_Test</runTest>
+    <runTest>IPM_Approverlist_Test</runTest>
+    <runTest>IPM_AssesmentHandler_Helper_Test</runTest>
+    <runTest>IPM_AssortmentStrategy_Test</runTest>
+    <runTest>IPM_Assumptions_Controller_Test</runTest>
+    <runTest>IPM_BBCountryList_Test</runTest>
+    <runTest>IPM_BBSectionData_Test</runTest>
+    <runTest>IPM_BCCController_Test</runTest>
+    <runTest>IPM_BCC_Consolidate_Controller_Test</runTest>
+    <runTest>IPM_BD_BB_Report_BatchSchedule_Test</runTest>
+    <runTest>IPM_BD_BB_Report_Batch_Test</runTest>
+    <runTest>IPM_BETDueDateNotificationBatch_Test</runTest>
+    <runTest>IPM_BETHelper_Test</runTest>
+    <runTest>IPM_BETNotificationBatchSchedule_Test</runTest>
+    <runTest>IPM_BETSuggestedMembersController_Test</runTest>
+    <runTest>IPM_BETUpdateService_Test</runTest>
+    <runTest>IPM_BosscardController_Test</runTest>
+    <runTest>IPM_BosscardStatusController_Test</runTest>
+    <runTest>IPM_CMIGateSectionController_Test</runTest>
+    <runTest>IPM_CU_Complexity_Consolidated_Test</runTest>
+    <runTest>IPM_CU_Complexity_Controller_Test</runTest>
+    <runTest>IPM_ChangProjectDocStatusController_Test</runTest>
+    <runTest>IPM_ConsumerImageUploadController_Test</runTest>
+    <runTest>IPM_Consumer_Evidence_Controller_Test</runTest>
+    <runTest>IPM_CoreParameters_Test</runTest>
+    <runTest>IPM_CountryHandler_Test</runTest>
+    <runTest>IPM_CreateProject_Test</runTest>
+    <runTest>IPM_CustomerChannelController_Test</runTest>
+    <runTest>IPM_DueDateNotificationBatch_Test</runTest>
+    <runTest>IPM_DueDateNotificationScheduler_Test</runTest>
+    <runTest>IPM_EcoDesignSection_Test</runTest>
+    <runTest>IPM_FileUploadController_Test</runTest>
+    <runTest>IPM_FinancialCopyPasteGrid_Test</runTest>
+    <runTest>IPM_FinancialValueWrapper_Test</runTest>
+    <runTest>IPM_FinancialWrapper_Test</runTest>
+    <runTest>IPM_FinancialYearTriggerHandler_Test</runTest>
+    <runTest>IPM_FunnelController_Test</runTest>
+    <runTest>IPM_FinGateController_Test</runTest>
+    <runTest>IPM_FinancialActionStandards_Test</runTest>
+    <runTest>IPM_FinancialController_Test</runTest>
+    <runTest>IPM_ChannelImageController_Test</runTest>
+    <runTest>IPM_ChatterFeedHelper_Test</runTest>
+    <runTest>IPM_ChatterUtilsHelper_Test</runTest>
+    <runTest>IPM_ChatterUtils_Test</runTest>
+    <runTest>IPM_CommentsListController_Test</runTest>
+    <runTest>IPM_CompanyCard_Test</runTest>
+    <runTest>IPM_GateCMIController_Test</runTest>
+    <runTest>IPM_GateCMI_Consolidated_Test</runTest>
+    <runTest>IPM_GateDocumentController_Test</runTest>
+    <runTest>IPM_GateDocumentRiskManagement_Test</runTest>
+    <runTest>IPM_ProjectResourceHandler_Test</runTest>
+    <runTest>IPM_GateRiskSection_Test</runTest>
+    <runTest>IPM_Gate_Milestones_Test</runTest>
+    <runTest>IPM_Gate_RollOuts_Controller_Test</runTest>
+    <runTest>IPM_ProjectResourceTriggerHandlerTest</runTest>
+    <runTest>IPM_ProjectRolloutHandler_Test</runTest>
+    <runTest>IPM_ProjectSearchCtrl_Test</runTest>
+    <runTest>IPM_GatekeeperChecklist_Test</runTest>
+    <runTest>IPM_Global_Consolidated_Controller_Test</runTest>
+    <runTest>IPM_ProjectSectionContentHelper_Test</runTest>
+    <runTest>IPM_ProjectSetUpController_Test</runTest>
+    <runTest>IPM_ProjectTriggerHandler_Test</runTest>
+    <runTest>IPM_GroupManagement_Test</runTest>
+    <runTest>IPM_HomePageController_Test</runTest>
+    <runTest>IPM_Resource_Allocation_Test</runTest>
+    <runTest>IPM_RolloutPlansAddController_Test</runTest>
+    <runTest>IPM_ImageUploadController_Test</runTest>
+    <runTest>IPM_List_Milestones_Test</runTest>
+    <runTest>IPM_RolloutPlansTableController_Test</runTest>
+    <runTest>IPM_RolloutTriggerHandler_Test</runTest>
+    <runTest>IPM_CheckRecursive_Test</runTest>
+    <runTest>IPM_GetHelpDoc_Test</runTest>
+    <runTest>IPM_IECompatible_Test</runTest>
+    <runTest>IPM_Milestone_Test</runTest>
+    <runTest>IPM_MilestoneHandler_Test</runTest>
+    <runTest>IPM_MyList_Test</runTest>
+    <runTest>IPM_OTIFstatusController_Test</runTest>
+    <runTest>IPM_ObjHistoryComponentController_Test</runTest>
+    <runTest>IPM_TaskCompCtrl_Test</runTest>
+    <runTest>IPM_TaskHelper_Test</runTest>
+    <runTest>IPM_ProjectDetails_Test</runTest>
+    <runTest>IPM_ProjectOverviewCtrol_Test</runTest>
+    <runTest>IPM_ProjectOwnerUpdatescheduler_Test</runTest>
+    <runTest>IPM_Taskview_Test</runTest>
+    <runTest>IPM_PjtDocSectionHstryController_Test</runTest>
+    <runTest>IPM_ProjDocSectionController_Test</runTest>
+    <runTest>IPM_Team_Assignment_Controller_Test</runTest>
+    <runTest>IPM_ProjectCountryDetails_Test</runTest>
+    <runTest>IPM_UpdateGlobalProjectName_Test</runTest>
+    <runTest>IPM_UploadBusinessCase_Test</runTest>
+    <runTest>IPM_MyProjects_Test</runTest>
+    <runTest>IPM_NewTask_Test</runTest>
+    <runTest>IPM_NotifyUsersRoleChanged_Test</runTest>
+    <runTest>IPM_ProjectHandler_Test</runTest>
+    <runTest>IPM_ProjectHelper_Test</runTest>
+    <runTest>IPM_ProjectOverviewCtrl_Test</runTest>
+    <runTest>IPM_SyncFinanceTableTLD_Test</runTest>
+    <runTest>IPM_Utils_Test</runTest>
+    </sf:deploy>
+  </target>  
   <!-- ************************************************************************************************ -->
-  <!-- Validate the  set of  meta-data before deployment with Test Classes for Delta Deploy       -->
+  <!-- Validate the  set of IPM NG meta-data before deployment with Test Classes for Delta Deploy       -->
   <!-- ************************************************************************************************ -->
-  <target name="validateDelta">
-    <echo level="info">Testing the deployment of  with Delta</echo>
+  <target name="validateDeltaIPM">
+    <echo level="info">Testing the deployment of IPM NG with Delta</echo>
     <sf:deploy username="${sf.username}"
       password="${sf.password}"
       serverurl="${sf.serverurl}"
@@ -183,9 +473,277 @@
       maxPoll="${sfdc.maxPoll}">      
     </sf:deploy>
   </target>
- 
+  
   <!-- ***************************************************************************** -->
-  <!-- Data export / import Targets For  For Post Deployment Activities        -->
+  <!-- Validate the  set of IPM NG meta-data before deployment with Test Classes      -->
+  <!-- ***************************************************************************** -->
+  <target name="validateIPMTest">
+    <echo level="info">Testing the deployment of IPM NG</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      checkOnly="true"
+      logType="Debugonly"
+      testLevel="RunSpecifiedTests"
+      allowMissingFiles="true"
+      autoUpdatePackage="true"
+      ignoreWarnings="true"
+      deployRoot="src"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+    <runTest>ExceptionLoggingHelper_Test</runTest>
+    <runTest>IPM_AddManageSection_Test</runTest>
+    <runTest>IPM_Approverlist_Test</runTest>
+    <runTest>IPM_AssesmentHandler_Helper_Test</runTest>
+    <runTest>IPM_AssortmentStrategy_Test</runTest>
+    <runTest>IPM_Assumptions_Controller_Test</runTest>
+    <runTest>IPM_BBCountryList_Test</runTest>
+    <runTest>IPM_BBSectionData_Test</runTest>
+    <runTest>IPM_BCC_Consolidate_Controller_Test</runTest>
+    <runTest>IPM_BCCController_Test</runTest>
+    <runTest>IPM_BD_BB_Report_BatchSchedule_Test</runTest>
+    <runTest>IPM_BD_BB_Report_Batch_Test</runTest>
+    <runTest>IPM_BETDueDateNotificationBatch_Test</runTest>
+    <runTest>IPM_BETHelper_Test</runTest>
+    <runTest>IPM_BETNotificationBatchSchedule_Test</runTest>
+    <runTest>IPM_BETSuggestedMembersController_Test</runTest>
+    <runTest>IPM_BETUpdateService_Test</runTest>
+    <runTest>IPM_BosscardController_Test</runTest>
+    <runTest>IPM_BosscardStatusController_Test</runTest>
+    <runTest>IPM_ChangProjectDocStatusCntrlGKM3_Test</runTest>
+    <runTest>IPM_ChangProjectDocStatusController_Test</runTest>
+    <runTest>IPM_ChannelImageController_Test</runTest>
+    <runTest>IPM_ChatterFeedHelper_Test</runTest>
+    <runTest>IPM_ChatterUtilsHelper_Test</runTest>
+    <runTest>IPM_ChatterUtils_Test</runTest>
+    <runTest>IPM_CheckRecursive_Test</runTest>
+    <runTest>IPM_CMIGateSectionController_Test</runTest>
+    <runTest>IPM_CommentsListController_Test</runTest>
+    <runTest>IPM_CompanyCard_Test</runTest>
+    <runTest>IPM_Consumer_Evidence_Controller_Test</runTest>
+    <runTest>IPM_ConsumerImageUploadController_Test</runTest>
+    <runTest>IPM_CoreParameters_Test</runTest>
+    <runTest>IPM_CountryHandler_Test</runTest>
+    <runTest>IPM_CreateProject_Test</runTest>
+    <runTest>IPM_CU_Complexity_Consolidated_Test</runTest>
+    <runTest>IPM_CU_Complexity_Controller_Test</runTest>
+    <runTest>IPM_CustomerChannelController_Test</runTest>
+    <runTest>IPM_DueDateNotificationBatch_Test</runTest>
+    <runTest>IPM_DueDateNotificationScheduler_Test</runTest>
+    <runTest>IPM_EcoDesignSection_Test</runTest>
+    <runTest>IPM_ExportTeamMembersReportCntrl_Test</runTest>
+    <runTest>IPM_FileUploadController_Test</runTest>
+    <runTest>IPM_FinancialActionStandards_Test</runTest>
+    <runTest>IPM_FinancialControllerGKM3_Test</runTest>
+    <runTest>IPM_FinancialControllerRegional_Test</runTest>
+    <runTest>IPM_FinancialControllerSoftVldtns_Test</runTest>
+    <runTest>IPM_FinancialController_Test</runTest>
+    <runTest>IPM_FinancialCopyPasteGrid_Test</runTest>
+    <runTest>IPM_FinancialMisalignment_Test</runTest>
+    <runTest>IPM_FinancialUtils_Test</runTest>
+    <runTest>IPM_FinancialValueWrapper_Test</runTest>
+    <runTest>IPM_FinancialWrapper_Test</runTest>
+    <runTest>IPM_FinGateController_Test</runTest>
+    <runTest>IPM_FunnelController_Test</runTest>
+    <runTest>IPM_GateCMI_Consolidated_Test</runTest>
+    <runTest>IPM_GateCMIController_Test</runTest>
+    <runTest>IPM_GateDocumentController_Test</runTest>
+    <runTest>IPM_GateDocumentRiskManagement_Test</runTest>
+    <runTest>IPM_GatekeeperChecklist_Test</runTest>
+    <runTest>IPM_Gate_Milestones_Test</runTest>
+    <runTest>IPM_GateRiskSection_Test</runTest>
+    <runTest>IPM_Gate_RollOuts_Controller_Test</runTest>
+    <runTest>IPM_GetHelpDoc_Test</runTest>
+    <runTest>IPM_GlobalClaimPDLController_Test</runTest>
+    <runTest>IPM_Global_Consolidated_Controller_Test</runTest>
+    <runTest>IPM_GlobalFinancialActionStandards_Test</runTest>
+    <runTest>IPM_GroupManagement_Test</runTest>
+    <runTest>IPM_HomePageController_Test</runTest>
+    <runTest>IPM_IECompatible_Test</runTest>
+    <runTest>IPM_ImageUploadController_Test</runTest>
+    <runTest>IPM_List_Milestones_Test</runTest>
+    <runTest>IPM_MilestoneHandler_Test</runTest>
+    <runTest>IPM_Milestone_Test</runTest>
+    <runTest>IPM_MyList_Test</runTest>
+    <runTest>IPM_MyProjects_Test</runTest>
+    <runTest>IPM_NewTask_Test</runTest>
+    <runTest>IPM_NotifyUsersRoleChanged_Test</runTest>
+    <runTest>IPM_ObjHistoryComponentController_Test</runTest>
+    <runTest>IPM_OTIF_Report_BatchSchedule_Test</runTest>
+    <runTest>IPM_OTIF_Report_Batch_Test</runTest>
+    <runTest>IPM_OTIFstatusController_Test</runTest>
+    <runTest>IPM_PerformanceBreakdownController_Test</runTest>
+    <runTest>IPM_PjtDocSectionHstryController_Test</runTest>
+    <runTest>IPM_ProjDocSectionController_Test</runTest>
+    <runTest>IPM_ProjectCountryDetails_Test</runTest>
+    <runTest>IPM_ProjectDetails_Test</runTest>
+    <runTest>IPM_ProjectDocumentSectionHandler_Test</runTest>
+    <runTest>IPM_ProjectHandler_Test</runTest>
+    <runTest>IPM_ProjectHelper_Test</runTest>
+    <runTest>IPM_ProjectOverviewCtrl_Test</runTest>
+    <runTest>IPM_ProjectOverviewCtrol_Test</runTest>
+    <runTest>IPM_ProjectOwnerUpdatescheduler_Test</runTest>
+    <runTest>IPM_ProjectResourceHandler_Test</runTest>
+    <runTest>IPM_ProjectResourceTriggerHandlerTest</runTest>
+    <runTest>IPM_ProjectRolloutHandler_Test</runTest>
+    <runTest>IPM_ProjectSearchCtrl_Test</runTest>
+    <runTest>IPM_ProjectSetUpController_Test</runTest>
+    <runTest>IPM_ProjectTriggerHandler_Test</runTest>
+    <runTest>IPM_Report_Test</runTest>
+    <runTest>IPM_Resource_Allocation_Test</runTest>
+    <runTest>IPM_RolloutPlansAddControllerGKM3_Test</runTest>
+    <runTest>IPM_RolloutPlansAddController_Test</runTest>
+    <runTest>IPM_RolloutPlansTableControllerGKM3_Test</runTest>
+    <runTest>IPM_RolloutPlansTableController_Test</runTest>
+    <runTest>IPM_RolloutTriggerHandler_Test</runTest>
+    <runTest>IPM_SourcePlanController_Test</runTest>
+    <runTest>IPM_SyncFinanceTableTLDLocal_Test</runTest>
+    <runTest>IPM_SyncFinanceTableTLD_Test</runTest>
+    <runTest>IPM_TaskCompCtrl_Test</runTest>
+    <runTest>IPM_TaskHelper_Test</runTest>
+    <runTest>IPM_Taskview_Test</runTest>
+    <runTest>IPM_Team_Assignment_Controller_Test</runTest>
+    <runTest>IPM_TestFactory</runTest>
+    <runTest>IPM_TestFactory_Helper</runTest>
+    <runTest>IPM_UpdateGlobalProjectName_Test</runTest>
+    <runTest>IPM_UploadBusinessCase_Test</runTest>
+    <runTest>IPM_ValidationHelper_Test</runTest>
+    </sf:deploy>
+  </target>
+  <!-- ***************************************************************************** -->
+  <!-- Running the IPM NG Test Classes with Dummy package                            -->
+  <!-- ***************************************************************************** -->
+  <target name="validateIPMTestOnly">
+    <echo level="info">Running IPM NG Test Classes</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      logType="Debugonly"
+      testLevel="RunSpecifiedTests"
+      ignoreWarnings="true"
+      deployRoot="${basedir}/test"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+      <runTest>ExceptionLoggingHelper_Test</runTest>
+      <runTest>IPM_AddManageSection_Test</runTest>
+      <runTest>IPM_Approverlist_Test</runTest>
+      <runTest>IPM_AssesmentHandler_Helper_Test</runTest>
+      <runTest>IPM_AssortmentStrategy_Test</runTest>
+      <runTest>IPM_Assumptions_Controller_Test</runTest>
+      <runTest>IPM_BBCountryList_Test</runTest>
+      <runTest>IPM_BBSectionData_Test</runTest>
+      <runTest>IPM_BCC_Consolidate_Controller_Test</runTest>
+      <runTest>IPM_BCCController_Test</runTest>
+      <runTest>IPM_BD_BB_Report_Batch_Test</runTest>
+      <runTest>IPM_BD_BB_Report_BatchSchedule_Test</runTest>
+      <runTest>IPM_BETDueDateNotificationBatch_Test</runTest>
+      <runTest>IPM_BETHelper_Test</runTest>
+      <runTest>IPM_BETNotificationBatchSchedule_Test</runTest>
+      <runTest>IPM_BETSuggestedMembersController_Test</runTest>
+      <runTest>IPM_BETUpdateService_Test</runTest>
+      <runTest>IPM_BosscardController_Test</runTest>
+      <runTest>IPM_BosscardStatusController_Test</runTest>
+      <runTest>IPM_ChangProjectDocStatusController_Test</runTest>
+      <runTest>IPM_ChannelImageController_Test</runTest>
+      <runTest>IPM_ChatterFeedHelper_Test</runTest>
+      <runTest>IPM_ChatterUtils_Test</runTest>
+      <runTest>IPM_ChatterUtilsHelper_Test</runTest>
+      <runTest>IPM_CMIGateSectionController_Test</runTest>
+      <runTest>IPM_CommentsListController_Test</runTest>
+      <runTest>IPM_CompanyCard_Test</runTest>
+      <runTest>IPM_Consumer_Evidence_Controller_Test</runTest>
+      <runTest>IPM_ConsumerImageUploadController_Test</runTest>
+      <runTest>IPM_CoreParameters_Test</runTest>
+      <runTest>IPM_CountryHandler_Test</runTest>
+      <runTest>IPM_CreateProject_Test</runTest>
+      <runTest>IPM_CU_Complexity_Consolidated_Test</runTest>
+      <runTest>IPM_CU_Complexity_Controller_Test</runTest>
+      <runTest>IPM_CustomerChannelController_Test</runTest>
+      <runTest>IPM_DueDateNotificationBatch_Test</runTest>
+      <runTest>IPM_DueDateNotificationScheduler_Test</runTest>
+      <runTest>IPM_EcoDesignSection_Test</runTest>
+      <runTest>IPM_FileUploadController_Test</runTest>
+      <runTest>IPM_FinancialActionStandards_Test</runTest>
+      <runTest>IPM_FinancialController_Currency_Test</runTest>
+      <runTest>IPM_FinancialController_Test</runTest>
+      <runTest>IPM_FinancialCopyPasteGrid_Test</runTest>
+      <runTest>IPM_FinancialTriggerHandler_Test</runTest>
+      <runTest>IPM_FinancialValueWrapper_Test</runTest>
+      <runTest>IPM_FinancialWrapper_Test</runTest>
+      <runTest>IPM_FinancialYearTriggerHandler_Test</runTest>
+      <runTest>IPM_FinGateController_Test</runTest>
+      <runTest>IPM_FunnelController_Test</runTest>
+      <runTest>IPM_Gate_Milestones_Test</runTest>
+      <runTest>IPM_Gate_RollOuts_Controller_Test</runTest>
+      <runTest>IPM_GateCMI_Consolidated_Test</runTest>
+      <runTest>IPM_GateCMIController_Test</runTest>
+      <runTest>IPM_GateDocumentController_Test</runTest>
+      <runTest>IPM_GateDocumentRiskManagement_Test</runTest>
+      <runTest>IPM_GatekeeperChecklist_Test</runTest>
+      <runTest>IPM_GateRiskSection_Test</runTest>
+      <runTest>IPM_Global_Consolidated_Controller_Test</runTest>
+      <runTest>IPM_GroupManagement_Test</runTest>
+      <runTest>IPM_HomePageController_Test</runTest>
+      <runTest>IPM_ImageUploadController_Test</runTest>
+      <runTest>IPM_List_Milestones_Test</runTest>
+      <runTest>IPM_Milestone_Test</runTest>
+      <runTest>IPM_MilestoneHandler_Test</runTest>
+      <runTest>IPM_MyList_Test</runTest>
+      <runTest>IPM_MyProjects_Test</runTest>
+      <runTest>IPM_MyTaskList_Test</runTest>
+      <runTest>IPM_NewTask_Test</runTest>
+      <runTest>IPM_NotifyUsersRoleChanged_Test</runTest>
+      <runTest>IPM_ObjHistoryComponentController_Test</runTest>
+      <runTest>IPM_OTIFstatusController_Test</runTest>
+      <runTest>IPM_PjtDocSectionHstryController_Test</runTest>
+      <runTest>IPM_ProjDocSectionController_Test</runTest>
+      <runTest>IPM_ProjectCountryDetails_Test</runTest>
+      <runTest>IPM_ProjectHandler_Test</runTest>
+      <runTest>IPM_ProjectHelper_Test</runTest>
+      <runTest>IPM_ProjectOverviewCtrl_Test</runTest>
+      <runTest>IPM_ProjectResourceHandler_Test</runTest>
+      <runTest>IPM_ProjectResourceTriggerHandlerTest</runTest>
+      <runTest>IPM_ProjectRolloutHandler_Test</runTest>
+      <runTest>IPM_ProjectSearchCtrl_Test</runTest>
+      <runTest>IPM_ProjectSectionContentHelper_Test</runTest>
+      <runTest>IPM_ProjectSetUpController_Test</runTest>
+      <runTest>IPM_ProjectTriggerHandler_Test</runTest>
+      <runTest>IPM_Resource_Allocation_Test</runTest>
+      <runTest>IPM_RolloutPlansAddController_Test</runTest>
+      <runTest>IPM_RolloutPlansTableController_Test</runTest>
+      <runTest>IPM_RolloutTriggerHandler_Test</runTest>
+      <runTest>IPM_SyncFinanceTableTLD_Test</runTest>
+      <runTest>IPM_TaskCompCtrl_Test</runTest>
+      <runTest>IPM_TaskHelper_Test</runTest>
+      <runTest>IPM_Taskview_Test</runTest>
+      <runTest>IPM_Team_Assignment_Controller_Test</runTest>
+      <runTest>IPM_UpdateGlobalProjectName_Test</runTest>
+      <runTest>IPM_UploadBusinessCase_Test</runTest>
+      <runTest>IPM_UserTriggerHandler_Test</runTest>
+    </sf:deploy>
+  </target>  
+	 <!-- ***************************************************************************** -->
+	  <!-- Running the Shared Services Test Classes with Dummy package                            -->
+	  <!-- ***************************************************************************** -->
+	  <target name="validateSSTestOnly">
+	    <echo level="info">Running IPM NG Test Classes</echo>
+	    <sf:deploy username="${sf.username}"
+	      password="${sf.password}"
+	      serverurl="${sf.serverurl}"
+	      logType="Debugonly"
+	      testLevel="RunSpecifiedTests"
+	      ignoreWarnings="true"
+	      deployRoot="${basedir}/test"
+	      pollWaitMillis="${sfdc.pollWaitMillis}"
+	      maxPoll="${sfdc.maxPoll}">
+	      <runTest>HRS_AssignCasesUsingAssignmentRules_Test</runTest>
+		  <runTest>HRS_CaseFieldsToArticleController_Test</runTest>
+		  <runTest>HRS_TestFactory_Helper</runTest>
+	    </sf:deploy>
+	  </target>  
+
+  <!-- ***************************************************************************** -->
+  <!-- Data export / import Targets For IPM NG For Post Deployment Activities        -->
   <!-- ***************************************************************************** -->
   <target name="initDataDirectory" description="Removes and re-creates a blank data directory in orgs/${orgname}">
     <delete dir="${basedir}/orgs/${orgname}/data"/>
@@ -228,9 +786,9 @@
     </sequential>
   </macrodef>
   <!-- ***************************************************************************** -->
-  <!-- Validate the  set of  Destructive chhanges meta-data before deployment                          -->
+  <!-- Validate the  set of IPM Destructive chhanges meta-data before deployment                          -->
   <!-- ***************************************************************************** --> 
-     <target name="validate-undeploy">
+     <target name="validate-undeployIPM">
       <echo level="info">Performing validate undeploy - DESTRUCTIVE CHANGE</echo>  
       <sf:deploy username="${sf.username}" 
         password="${sf.password}" 
@@ -244,10 +802,273 @@
         deployRoot="${basedir}/undeploy"
         pollWaitMillis="${sfdc.pollWaitMillis}"
         maxPoll="${sfdc.maxPoll}">        
-   
+    <runTest>IPM_AddManageSection_Test</runTest>
+        <runTest>IPM_Approverlist_Test</runTest>
+        <runTest>IPM_AssesmentHandler_Helper_Test</runTest>
+        <runTest>IPM_AssortmentStrategy_Test</runTest>
+        <runTest>IPM_Assumptions_Controller_Test</runTest>
+        <runTest>IPM_BBCountryList_Test</runTest>
+        <runTest>IPM_BBSectionData_Test</runTest>
+        <runTest>IPM_BCC_Consolidate_Controller_Test</runTest>
+        <runTest>IPM_BCCController_Test</runTest>
+        <runTest>IPM_BD_BB_Report_BatchSchedule_Test</runTest>
+        <runTest>IPM_BD_BB_Report_Batch_Test</runTest>
+        <runTest>IPM_BETDueDateNotificationBatch_Test</runTest>
+        <runTest>IPM_BETHelper_Test</runTest>
+        <runTest>IPM_BETNotificationBatchSchedule_Test</runTest>
+        <runTest>IPM_BETSuggestedMembersController_Test</runTest>
+        <runTest>IPM_BETUpdateService_Test</runTest>
+        <runTest>IPM_BosscardController_Test</runTest>
+        <runTest>IPM_BosscardStatusController_Test</runTest>
+        <runTest>IPM_ChangProjectDocStatusController_Test</runTest>
+        <runTest>IPM_ChannelImageController_Test</runTest>
+        <runTest>IPM_ChatterFeedHelper_Test</runTest>
+        <runTest>IPM_ChatterUtilsHelper_Test</runTest>
+        <runTest>IPM_ChatterUtils_Test</runTest>
+        <runTest>IPM_CMIGateSectionController_Test</runTest>
+        <runTest>IPM_CommentsListController_Test</runTest>
+        <runTest>IPM_CompanyCard_Test</runTest>
+        <runTest>IPM_Consumer_Evidence_Controller_Test</runTest>
+        <runTest>IPM_ConsumerImageUploadController_Test</runTest>
+        <runTest>IPM_CoreParameters_Test</runTest>
+        <runTest>IPM_CountryHandler_Test</runTest>
+        <runTest>IPM_CreateProject_Test</runTest>
+        <runTest>IPM_CU_Complexity_Consolidated_Test</runTest>
+        <runTest>IPM_CU_Complexity_Controller_Test</runTest>
+        <runTest>IPM_CustomerChannelController_Test</runTest>
+        <runTest>IPM_DueDateNotificationBatch_Test</runTest>
+        <runTest>IPM_DueDateNotificationScheduler_Test</runTest>
+        <runTest>IPM_EcoDesignSection_Test</runTest>
+        <runTest>IPM_FileUploadController_Test</runTest>
+        <runTest>IPM_FinancialActionStandards_Test</runTest>
+        <runTest>IPM_FinancialController_Test</runTest>
+        <runTest>IPM_FinancialCopyPasteGrid_Test</runTest>
+        <runTest>IPM_FinancialValueWrapper_Test</runTest>
+        <runTest>IPM_FinancialWrapper_Test</runTest>
+        <runTest>IPM_FinGateController_Test</runTest>
+        <runTest>IPM_FunnelController_Test</runTest>
+        <runTest>IPM_GateCMI_Consolidated_Test</runTest>
+        <runTest>IPM_GateCMIController_Test</runTest>
+        <runTest>IPM_GateDocumentController_Test</runTest>
+        <runTest>IPM_GateDocumentRiskManagement_Test</runTest>
+        <runTest>IPM_GatekeeperChecklist_Test</runTest>
+        <runTest>IPM_Gate_Milestones_Test</runTest>
+        <runTest>IPM_GateRiskSection_Test</runTest>
+        <runTest>IPM_Gate_RollOuts_Controller_Test</runTest>
+        <runTest>IPM_GetHelpDoc_Test</runTest>
+        <runTest>IPM_Global_Consolidated_Controller_Test</runTest>
+        <runTest>IPM_GroupManagement_Test</runTest>
+        <runTest>IPM_HomePageController_Test</runTest>
+        <runTest>IPM_ImageUploadController_Test</runTest>
+        <runTest>IPM_List_Milestones_Test</runTest>
+        <runTest>IPM_MilestoneHandler_Test</runTest>
+        <runTest>IPM_Milestone_Test</runTest>
+        <runTest>IPM_MyList_Test</runTest>
+        <runTest>IPM_MyProjects_Test</runTest>
+        <runTest>IPM_NewTask_Test</runTest>
+        <runTest>IPM_NotifyUsersRoleChanged_Test</runTest>
+        <runTest>IPM_ObjHistoryComponentController_Test</runTest>
+        <runTest>IPM_OTIFstatusController_Test</runTest>
+        <runTest>IPM_PjtDocSectionHstryController_Test</runTest>
+        <runTest>IPM_ProjDocSectionController_Test</runTest>
+        <runTest>IPM_ProjectCountryDetails_Test</runTest>
+        <runTest>IPM_ProjectHandler_Test</runTest>
+        <runTest>IPM_ProjectHelper_Test</runTest>
+        <runTest>IPM_ProjectOverviewCtrl_Test</runTest>
+        <runTest>IPM_ProjectOverviewCtrol_Test</runTest>
+        <runTest>IPM_ProjectResourceHandler_Test</runTest>
+        <runTest>IPM_ProjectResourceTriggerHandlerTest</runTest>
+        <runTest>IPM_ProjectRolloutHandler_Test</runTest>
+        <runTest>IPM_ProjectSearchCtrl_Test</runTest>
+        <runTest>IPM_ProjectSectionContentHelper_Test</runTest>
+        <runTest>IPM_ProjectSetUpController_Test</runTest>
+        <runTest>IPM_ProjectTriggerHandler_Test</runTest>
+        <runTest>IPM_Resource_Allocation_Test</runTest>
+        <runTest>IPM_RolloutPlansAddController_Test</runTest>
+        <runTest>IPM_RolloutPlansTableController_Test</runTest>
+        <runTest>IPM_RolloutTriggerHandler_Test</runTest>
+        <runTest>IPM_SyncFinanceTableTLD_Test</runTest>
+        <runTest>IPM_TaskCompCtrl_Test</runTest>
+        <runTest>IPM_TaskHelper_Test</runTest>
+        <runTest>IPM_Taskview_Test</runTest>
+        <runTest>IPM_Team_Assignment_Controller_Test</runTest>
+        <runTest>IPM_UpdateGlobalProjectName_Test</runTest>
+        <runTest>IPM_UploadBusinessCase_Test</runTest>
+        <runTest>IPM_GlobalFinancialActionStandards_Test</runTest>
+        <runTest>IPM_OTIF_Report_BatchSchedule_Test</runTest>
+        <runTest>IPM_OTIF_Report_Batch_Test</runTest>
+        <runTest>IPM_PerformanceBreakdownController_Test</runTest>
+        <runTest>IPM_ProjectDocumentSectionHandler_Test</runTest>
+        <runTest>IPM_ValidationHelper_Test</runTest>
         </sf:deploy>
     </target>
-
+<!-- ***************************************************************************** -->
+  <!-- Validate the  set of BET meta-data before deployment                          -->
+  <!-- ***************************************************************************** -->
+  <target name="validateBET">
+    <echo level="info">Testing the deployment of BET</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      checkOnly="true"
+      logType="Debugonly"
+      testLevel="RunSpecifiedTests"
+      allowMissingFiles="true"
+      autoUpdatePackage="true"
+      ignoreWarnings="true"
+      deployRoot="src"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+      <runTest>BET_AccessServiceTest</runTest>
+      <runTest>BET_ApproveProjectsComponentContrTest</runTest>
+      <runTest>BET_AssetDispatcherControllerTest</runTest>
+      <runTest>BET_AssetHandlerClsTest</runTest>
+      <runTest>BET_AssetServiceTest</runTest>
+      <runTest>BET_AssetsOrderController_Test</runTest>
+      <runTest>BET_BatchAssetStatusMapping_Test</runTest>
+      <runTest>BET_BatchBETStatusMapping_Test</runTest>
+      <runTest>BET_BatchBrandDelete_Test</runTest>
+      <runTest>BET_BatchBrandMapping_Test</runTest>
+      <runTest>BET_BatchCategoryMapping_Test</runTest>
+      <runTest>BET_BatchCopyBrandValues_Test</runTest>
+      <runTest>BET_BatchDeniedMemberRequestDelete_Test</runTest>
+      <runTest>BET_BatchMediaChannel1Mapping_Test</runTest>
+      <runTest>BET_BatchOldAssetStatusMapping_Test</runTest>
+      <runTest>BET_BatchScheduler_Test</runTest>
+      <runTest>BET_BatchUpdateChatterGroupInfo_Test</runTest>
+      <runTest>BET_BETHardDelete_BatchSchedule_Test</runTest>
+      <runTest>BET_BETServiceTest</runTest>
+      <runTest>BET_CategoryBrandSelectionControllerTest</runTest>
+      <runTest>BET_ChatterController_Test</runTest>
+      <runTest>BET_ChatterGroupAutoArchDis_BatchTest</runTest>
+      <runTest>BET_CommonServiceTest</runTest>
+      <runTest>BET_DataFixReleaseDate_BatchTest</runTest>
+      <runTest>BET_EditAssetController1_Test</runTest>
+      <runTest>BET_EditAssetController_Test</runTest>
+      <runTest>BET_EmailNotificationServiceTest</runTest>
+      <runTest>BET_ExpectedAssetsControllerTest</runTest>
+      <runTest>BET_FollowRequestTriggerHandlerClsTest</runTest>
+      <runTest>BET_InoplanToIPMMigration_Batch_Test</runTest>
+      <runTest>BET_LinkedProjectsComponentContrTest</runTest>
+      <runTest>BET_LinkingServiceHelperTest</runTest>
+      <runTest>BET_LinkingServiceTest</runTest>
+      <runTest>BET_LinkingServiceTestOne</runTest>
+      <runTest>BET_ManageMembersController_Test</runTest>
+      <runTest>BET_ManageMembersController_Test2</runTest>
+      <runTest>BET_ManageMembersController_Test3</runTest>
+      <runTest>BET_MasterDataServiceTest</runTest>
+      <runTest>BET_MDODataMigrationAndTrans_BatchTest</runTest>
+      <runTest>BET_MemberRequestHandlerClsTest</runTest>
+      <runTest>BET_MultiUploadAssetsControllerTest</runTest>
+      <runTest>BET_NewBETComponentControllerTest</runTest>
+      <runTest>BET_NewBETControllerTest</runTest>
+      <runTest>BET_PresentationBatch_Test</runTest>
+      <runTest>BET_ReleaseDateEmails_Test</runTest>
+      <runTest>BET_SCH_BatchDeniedMemberRequestDel_Test</runTest>
+      <runTest>BET_SoslFieldsBatch_Test</runTest>
+      <runTest>BET_SuggestedMemberServiceTest</runTest>
+      <runTest>BET_SuggestMembersControllerTest</runTest>
+      <runTest>BET_Team_MemberHandlerClsHelperTest</runTest>
+      <runTest>BET_Team_MemberHandlerClsTest</runTest>
+      <runTest>BET_TestingHelper</runTest>
+      <runTest>BET_TestUtils</runTest>
+      <runTest>BET_Triggers_Test</runTest>
+      <runTest>BET_UpdateExpectedAssetsController_Test</runTest>
+      <runTest>BET_UpsertBETControllerTest</runTest>
+      <runTest>uw_ArticleExtensionTest</runTest>
+      <runTest>uw_BatchJobHelper</runTest>
+      <runTest>uw_BatchJobManagerController</runTest>
+      <runTest>uw_BETAndAssetPromotionTest</runTest>
+      <runTest>uw_BETDetailService_Test</runTest>
+      <runTest>uw_BETDetailService_Test2</runTest>
+      <runTest>uw_BETDetailService_Test3</runTest>
+      <runTest>uw_BETEditController_Test</runTest>
+      <runTest>uw_BETRemoteController_Test</runTest>
+      <runTest>uw_BETSearchService_Test</runTest>
+      <runTest>uw_BETUtil_Test</runTest>
+      <runTest>uw_BET_before_delete_test_class</runTest>
+      <runTest>uw_BET_schedule_batch_calculatemem_TEST</runTest>
+      <runTest>uw_BET_update_totalnoof_BETmembers_TEST</runTest>
+      <runTest>uw_BrandCentreExtensionTest</runTest>
+      <runTest>uw_Constants</runTest>
+      <runTest>uw_CustomAssetUploadExtensionTest</runTest>
+      <runTest>uw_CustomAssetUploadExtensionTest2</runTest>
+      <runTest>uw_CustomSettingsManager</runTest>
+      <runTest>uw_DeleteObjectsHelper</runTest>
+      <runTest>uw_FeedComments_Test</runTest>
+      <runTest>uw_FetchFeedItems_Test</runTest>
+      <runTest>uw_futureHandler</runTest>
+      <runTest>uw_HelperMethods</runTest>
+      <runTest>uw_HelperSOQLMethods</runTest>
+      <runTest>uw_MakeAssetsVisibleTest</runTest>
+      <runTest>uw_MiscTest</runTest>
+      <runTest>uw_OwnerUpdate</runTest>
+      <runTest>uw_PinnovateController_Test</runTest>
+      <runTest>uw_RedirectArticle</runTest>
+      <runTest>uw_Redirect_Brand_PageTest</runTest>
+      <runTest>uw_TacHelper</runTest>
+      <runTest>uw_TermsConditionsController</runTest>
+      <runTest>uw_TermsOfUseControllerTest</runTest>
+      <runTest>uw_testTrigger</runTest>
+      <runTest>uw_TokenHelper</runTest>
+      <runTest>uw_TriggerHandler_Test</runTest>
+      <runTest>uw_UnitTestDataFactory</runTest>
+  </sf:deploy>
+  </target>
+<!-- ***************************************************************************** -->
+  <!-- Validate the  set of Hubble meta-data before deployment                          -->
+  <!-- ***************************************************************************** -->
+  <target name="validateCPA">
+    <echo level="info">Testing the deployment of Hubble</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      checkOnly="true"
+      logType="Debugonly"
+      testLevel="RunSpecifiedTests"
+      allowMissingFiles="true"
+      autoUpdatePackage="true"
+      ignoreWarnings="true"
+      deployRoot="src"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+      <runTest>CPA_batchProrfAgeUpdate_test</runTest>
+      <runTest>CPA_ReturnController_Test</runTest>
+      <runTest>CPA_SelectRecordType_Test</runTest>
+      <runTest>CPA_ReturnController_Test</runTest>
+      <runTest>CPA_Req_Deli_and_Key_Contacts_util_Test</runTest>
+      <runTest>CPA_PWORF_PWO_UtilMethods_Test</runTest>
+      <runTest>CPA_PWORF_Aging_Schedular_Test</runTest>
+      <runTest>CPA_InformationController_Test</runTest>
+      <runTest>CPA_Contract_UtilMethods_Test</runTest>
+      <runTest>CPA_Commercials_Threshold_Test</runTest>
+      <runTest>CPA_CancelController_Test</runTest>
+      <runTest>CPA_AttchemntUtilController_Test</runTest>
+      <runTest>Oblix_SOWNonCampaignCreateCtrl_Test</runTest>
+    </sf:deploy>
+  </target>
+  <!-- ***************************************************************************** -->
+  <!-- Validate the set of Chatter Personalisation meta-data before deployment       -->
+  <!-- ***************************************************************************** -->
+  <target name="validateCHP">
+    <echo level="info">Testing the deployment of CHP - Chatter Personalisation</echo>
+    <sf:deploy username="${sf.username}"
+      password="${sf.password}"
+      serverurl="${sf.serverurl}"
+      checkOnly="true"
+      logType="Debugonly"
+      testLevel="RunSpecifiedTests"
+      allowMissingFiles="true"
+      autoUpdatePackage="true"
+      ignoreWarnings="true"
+      deployRoot="src"
+      pollWaitMillis="${sfdc.pollWaitMillis}"
+      maxPoll="${sfdc.maxPoll}">
+	  <runTest>CHP_LogIssue_Test</runTest>
+	  <runTest>CHP_LogIssueFeedItem_Test</runTest>
+      <runTest>CHP_Utils_Test</runTest>
+    </sf:deploy>
+  </target>
   <!-- ***************************************************************************** -->
   <!-- Performing the tests and deploy of Meta-data                                  -->
   <!-- ***************************************************************************** -->
@@ -299,7 +1120,25 @@
       pollWaitMillis="${sfdc.pollWaitMillis}"
       maxPoll="${sfdc.maxPoll}"/>
   </target>
- <!-- *************************************************************************************** -->
+  <!-- *************************************************************************************** -->
+  <!-- Performing validate undeploy Salesforce components from Salesforce Org- DESTRUCTIVE CHANGE       -->
+  <!-- *************************************************************************************** -->  
+    <target name="validate-undeploy">
+      <echo level="info">Performing validate undeploy - DESTRUCTIVE CHANGE</echo>  
+      <sf:deploy username="${sf.username}" 
+        password="${sf.password}" 
+        serverurl="${sf.serverurl}" 
+        checkOnly="true"
+        runAllTests="true"
+        logType="Debugonly"
+        testLevel="RunLocalTests"
+        allowMissingFiles="true"
+        autoUpdatePackage="true"
+        ignoreWarnings="true"       
+        deployRoot="${basedir}/undeploy"
+        pollWaitMillis="${sfdc.pollWaitMillis}"
+        maxPoll="${sfdc.maxPoll}"/>        
+    </target><!-- *************************************************************************************** -->
   <!-- Performing deploy undeploy Salesforce components from Salesforce Org- DESTRUCTIVE CHANGE       -->
   <!-- *************************************************************************************** -->  
     <target name="deploy-undeploy">
@@ -329,7 +1168,34 @@
       <param name="serverurl" value="${sf.serverurl}"/>
     </antcall>
   </target>
-  
+  <!-- **************************************************************************************** -->
+  <!-- IPM NG Application Data Set-up Using APEX Anonymous Code For Post Deployment Activities  -->
+  <!-- **************************************************************************************** -->
+  <!-- Script to Insert Account For Testing Purpose -->
+  <target name="LoadTest">
+    <antcall target="ExecAnonScript">
+      <param name="what" value="scripts/IPM_CustomSettings.apex" />
+    </antcall>
+  </target>
+  <!-- Script For Mapping Section to Task -->
+  <target name="MapSectionToTask">
+    <antcall target="ExecAnonScript">
+      <param name="what" value="scripts/IPM_MapSectionToTask.apex" />
+    </antcall>
+  </target>
+  <!-- Script For Update Parent SectionID For The Sections  -->
+  <target name="UpateParentSectionID">
+    <antcall target="ExecAnonScript">
+      <param name="what" value="scripts/IPM_UpdateParentSectionID.apex" />
+    </antcall>
+  </target>
+  <!-- Invoke All the IPM NG Apex Scripts  -->
+  <target name="RunAllApexScripts">
+   <echo level="info">Script For Mapping Section to Task</echo>
+   <antcall target="MapSectionToTask"/>
+   <echo level="info">Script For Update Parent SectionID For The Sections</echo>
+   <antcall target="UpateParentSectionID"/>
+  </target>
   <!-- *************************************************************************************** -->
   <!-- Recreate the deployment directory and retrieve all meta-data from your org              -->
   <!-- *************************************************************************************** -->
@@ -407,13 +1273,69 @@
     <delete><fileset dir="${basedir}" includes="**/*.dataSource"/></delete>
     <delete><fileset dir="${basedir}" includes="**/*.network"/></delete>
     <delete><fileset dir="${basedir}" includes="**/API_Only.permissionset"/></delete>
+    <delete><fileset dir="${basedir}" includes="**/CEC_Delegated_Administrators.permissionset"/></delete>
+    <delete><fileset dir="${basedir}" includes="**/CEC_Automated_User.permissionset"/></delete>
     <delete><fileset dir="${basedir}" includes="**/***HELP***.homePageComponent"/></delete>
-     <delete><fileset dir="${basedir}" includes="**/*.flow"/></delete>
+    <delete><fileset dir="${basedir}" includes="**/JE_Job_Evaluation__c.object"/></delete>
+    <delete><fileset dir="${basedir}" includes="**/*.flow"/></delete>
     <delete><fileset dir="${basedir}" includes="**/objectTranslations/Account*"/></delete>
     <delete><fileset dir="${basedir}" includes="**/Case.assignmentRules"/></delete>
     <delete><fileset dir="${basedir}" includes="src/package.xml"/></delete>
     <!--<antcall target="generatePackage"/>-->
   </target>
+    <!-- ***************************************************************************** -->
+  <!-- Validate the  set of VPM Destructive changes meta-data before deployment                          -->
+  <!-- ***************************************************************************** --> 
+     <target name="validate-undeployVPM">
+      <echo level="info">Performing validate undeploy - DESTRUCTIVE CHANGE</echo>  
+      <sf:deploy username="${sf.username}" 
+        password="${sf.password}" 
+        serverurl="${sf.serverurl}" 
+        checkOnly="true"
+        logType="Debugonly"
+    testLevel="RunSpecifiedTests"
+        allowMissingFiles="true"
+        autoUpdatePackage="true"
+        ignoreWarnings="true"       
+        deployRoot="${basedir}/undeploy"
+        pollWaitMillis="${sfdc.pollWaitMillis}"
+        maxPoll="${sfdc.maxPoll}">        
+            <runTest>VPM_ApprovalSubmitTest</runTest>
+        </sf:deploy>
+    </target>
+      <!-- Validate the  set of TEL Destructive changes meta-data before deployment                          -->
+  <!-- ***************************************************************************** --> 
+     <target name="validate-undeployTEL">
+      <echo level="info">Performing validate undeploy - DESTRUCTIVE CHANGE</echo>  
+      <sf:deploy username="${sf.username}" 
+        password="${sf.password}" 
+        serverurl="${sf.serverurl}" 
+        checkOnly="true"
+        logType="Debugonly"
+    testLevel="RunSpecifiedTests"
+        allowMissingFiles="true"
+        autoUpdatePackage="true"
+        ignoreWarnings="true"       
+        deployRoot="${basedir}/undeploy"
+        pollWaitMillis="${sfdc.pollWaitMillis}"
+        maxPoll="${sfdc.maxPoll}">        
+        <runTest>TEL_AssociateProductsController_Test</runTest>
+        <runTest>TEL_CaseTrigger_Test</runTest>
+        <runTest>TEL_OppGenController_Test</runTest>
+        <runTest>TEL_OpportunitySalesCallCreation_Test</runTest>
+        <runTest>TEL_ProductInfo_CC_Test</runTest>
+        <runTest>TEL_AssignOpportunityOwner_Test</runTest>
+        <runTest>TEL_OpportunityTrigger_Test</runTest>
+        <runTest>TEL_CallButtonController_Test</runTest>
+        <runTest>TEL_SearchBar_Test</runTest>
+        <runTest>TEL_WholesalerController_Test</runTest>
+        <runTest>TEL_AccountHeaderInfoController_Test</runTest>
+        <runTest>TEL_ContactTrigger_Test</runTest>
+        <runTest>TEL_AccountTrigger_Test</runTest>
+        <runTest>TEL_EmailSenderTest</runTest>
+        <runTest>TEL_UserTestInstance_Test</runTest>
+        </sf:deploy>
+    </target>
 
 <target name="retrieveAllClasses">
     <echo level="info">Performing a retrieve</echo>
@@ -504,4 +1426,5 @@
         
      ]]>
 </scriptdef>
+
 </project>
