@@ -89,8 +89,8 @@
   </target>  
   
     <target name="proxy">		
- 	<property name="proxy.host" value="${proxy.host}" />		
- 	<property name="proxy.port" value="6050" />		
+ 	<property name="proxy.host" value="" />		
+ 	<property name="proxy.port" value="" />		
  	<property name="proxy.user" value="" />		
  	<property name="proxy.pwd" value="" />		
  	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
