@@ -93,7 +93,7 @@
  	<property name="proxy.port" value="6050" />		
  	<property name="proxy.user" value="" />		
  	<property name="proxy.pwd" value="" />		
- 	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
+ 	<setproxy proxyhost="${proxy.host}" proxyport="6050" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
  </target>		
   <!-- ***************************************************************************** -->
   <!-- QuickDeploy the meta-data from code Repository to salesforce your org     -->
