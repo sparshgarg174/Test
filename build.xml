@@ -144,7 +144,7 @@
       allowMissingFiles="true"
       autoUpdatePackage="true"
       ignoreWarnings="true"
-      deployRoot="${basedir}/deploy"
+      deployRoot="${basedir}/src/deploy"
       pollWaitMillis="${sfdc.pollWaitMillis}"
       maxPoll="${sfdc.maxPoll}"/>
   </target> 
