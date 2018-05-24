@@ -133,7 +133,7 @@
   <!-- ***************************************************************************** -->
   <!-- Deploy Delta the meta-data from code Repository to salesforce your org      -->
   <!-- ***************************************************************************** -->
-  <target name="deployDelta">
+  <target name="deployDelta" depends="proxy">
     <echo level="info">Performing the delta deploy</echo>
     <sf:deploy username="${sf.username}"
       password="${sf.password}"
@@ -144,7 +144,7 @@
       allowMissingFiles="true"
       autoUpdatePackage="true"
       ignoreWarnings="true"
-      deployRoot="${basedir}/deploy/src"
+      deployRoot="${basedir}/deploy"
       pollWaitMillis="${sfdc.pollWaitMillis}"
       maxPoll="${sfdc.maxPoll}"/>
   </target> 
