@@ -507,7 +507,7 @@
  	
 	<macrodef name="git">
 		<attribute name="command" />
-		<attribute name="dir" default="${gt.Directory}" />
+		<attribute name="dir" default="src" />
 		<element name="args" optional="true" />
 		<sequential>
 			<echo message="git @{command}" />
@@ -530,7 +530,7 @@
 
 		<git command="commit">
 			<args>
-				<arg value="-am ${gt.commitMessage}" />
+				<arg value="-am default" />
 			</args>
 		</git>
 	</target>
