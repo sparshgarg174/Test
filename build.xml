@@ -504,6 +504,35 @@
  	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pwd}" />		
  </target>		
 
- 
+ 	
+	<macrodef name="git">
+		<attribute name="command" />
+		<attribute name="dir" default="${gt.Directory}" />
+		<element name="args" optional="true" />
+		<sequential>
+			<echo message="git @{command}" />
+			<exec executable="git" dir="@{dir}">
+				<arg value="@{command}" />
+				<args/>
+			</exec>
+		</sequential>
+	</macrodef>
+
+	<target name="GitOperations" description="Commits all changes to version git" depends="SFDCFetch">
+
+		<echo message="Commiting all changes with message ${gt.commitMessage}" /> 
+
+		<git command="add">
+			<args>
+				<arg value="." />
+			</args>
+		</git>
+
+		<git command="commit">
+			<args>
+				<arg value="-am ${gt.commitMessage}" />
+			</args>
+		</git>
+	</target>
 	
 </project>
