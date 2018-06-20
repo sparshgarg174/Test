@@ -39,20 +39,20 @@
   <!-- ***************************************************************************** -->
   <!-- Recreate the deployment directory and retrieve  meta-data from your org     -->
   <!-- ***************************************************************************** -->
-  <target name="retrieve" description="Recreate the deployment directory and retrieve all metadata from your org">
+  <target name="retrieve" depends="proxy">
     <echo level="info">Performing a retrieve</echo>
-    <mkdir dir="${basedir}/${sfdc.retrieveTarget}"/>
+    <mkdir dir="${basedir}"/>
     <sf:retrieve username="${sf.username}"
      password="${sf.password}"
      serverurl="${sf.serverurl}"
-     retrieveTarget="${basedir}/${sfdc.retrieveTarget}"
+     retrieveTarget="src"
      unpackaged="src/package.xml"
      pollWaitMillis="${sfdc.pollWaitMillis}"
      maxPoll="${sfdc.maxPoll}"/>
      <delete includeemptydirs="true">
       <fileset dir="src" includes="**/*"/>
     </delete>
-    <move file="${basedir}/${sfdc.retrieveTarget}" tofile="src"/>
+   <!-- <move file="${basedir}" tofile="src"/> -->
   </target>
 
   <target name="retrieve-updates" description="Retrieve update(s)">
