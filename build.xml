@@ -518,7 +518,7 @@
 		</sequential>
 	</macrodef>
 
-	<target name="GitOperations" description="Commits all changes to version git" depends="SFDCFetch">
+	<target name="GitOperations" depends="retrieve">
 
 		<echo message="Commiting all changes with message ${gt.commitMessage}" /> 
 
