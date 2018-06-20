@@ -46,7 +46,7 @@
      password="${sf.password}"
      serverurl="${sf.serverurl}"
      retrieveTarget="src"
-     unpackaged="src/package.xml"
+     unpackaged="package.xml"
      pollWaitMillis="${sfdc.pollWaitMillis}"
      maxPoll="${sfdc.maxPoll}"/>
      <delete includeemptydirs="true">
